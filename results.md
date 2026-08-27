@@ -37,9 +37,37 @@ None of the four used identical color palettes or fonts — see each file's
 combination that's a well-known "default AI aesthetic" pattern; the others
 picked distinct blue/indigo-leaning palettes.
 
+## Dark-theme follow-up (qwen3.8-27b-q3 only)
+
+Human review flagged `qwen3.8-27b-q3`'s dark theme as noticeably weaker than
+its light theme. Checking the actual WCAG contrast ratios showed this
+wasn't an accessibility defect — dark mode measured *higher* contrast than
+light mode on every text/background pair (body text 15.75:1 vs. 14.61:1;
+accent text 5.93:1 vs. 3.99:1). The problem was color harmony: the accent
+was brightened and re-saturated for dark mode (`#cf4a2b` → `#f4623f`)
+rather than desaturated, reading as hot/neon against the warm brown-black
+background instead of calm and considered.
+
+We asked `qwen3.8-27b-q3` to regenerate *only* the
+`html[data-theme="dark"]{...}` token block, supplying the light-theme block
+as a working reference and the harmony critique above as the brief, with
+explicit contrast-ratio floors (body text >7:1, accent text >4.5:1, button
+text >4.5:1). One shot, 9.7s, no page regeneration needed. Result:
+`--accent:#f4623f` → `#e29471` (muted salmon) and `--accent-2:#63b096` →
+`#7a9c8e` (muted sage) — it desaturated `--accent-2` too, unprompted,
+applying the same principle consistently. New contrast: accent text on
+background 7.75:1, button text on accent 7.66:1 — both improved, not just
+maintained. The fix is now live in `qwen3.8-27b-q3.html`; the original
+values were `--accent:#f4623f; --accent-ink:#1a120e; --accent-2:#63b096;`
+(see git history for the pre-fix version). Full transcript:
+`qwen-dark-theme-fix.raw.txt`.
+
 ## Files
 
 - `prompt.txt` — the exact prompt sent to every model
-- `<model>.html` — each model's raw, unmodified output
+- `<model>.html` — each model's raw output (dark-mode accent in
+  `qwen3.8-27b-q3.html` has one targeted fix applied — see above)
 - `<model>.raw.txt` — the full CLI transcript (includes `--verbose` timing
   stats) each `.html` file was extracted from
+- `qwen-dark-theme-fix.raw.txt` — transcript of the isolated dark-theme
+  regeneration described above
