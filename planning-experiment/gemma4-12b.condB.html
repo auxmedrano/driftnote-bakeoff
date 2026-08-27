@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driftnote | Your Thoughts, Locally Secured</title>
+    <style>
+        /* --- CSS VARIABLES --- */
+        :root {
+            /* Light Theme (Default) */
+            --bg: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --border: #e5e7eb;
+            --card-bg: #ffffff;
+            --accent: #f3f4f6;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary: #818cf8;
+            --primary-hover: #a5b4fc;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --accent: #334155;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- RESET & BASE --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3 {
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        /* --- HEADER --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            letter-spacing: -0.05em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- HERO --- */
+        .hero {
+            padding: 100px 0 80px;
+            text-align: center;
+            background: radial-gradient(circle at top, var(--accent) 0%, var(--bg) 70%);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, var(--primary), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        /* --- FEATURES --- */
+        .features {
+            padding: 100px 0;
+            background-color: var(--bg-secondary);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-card h3 {
+            margin: 1rem 0;
+            color: var(--primary);
+        }
+
+        /* --- PRICING --- */
+        .pricing {
+            padding: 100px 0;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .price-card {
+            padding: 3rem 2rem;
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .price-card.featured {
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+            transform: scale(1.05);
+        }
+
+        .badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .price-value {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 1rem 0;
+        }
+
+        .price-value span {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- FAQ --- */
+        .faq {
+            padding: 100px 0;
+            background-color: var(--bg-secondary);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .faq-btn {
+            width: 100%;
+            padding: 1.5rem;
+            text-align: left;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .faq-btn::after {
+            content: '+';
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-btn[aria-expanded="true"]::after {
+            content: '-';
+        }
+
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding-bottom: 1.5rem;
+        }
+
+        .faq-content p {
+            color: var(--text-secondary);
+        }
+
+        /* --- RESPONSIVE --- */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 1024px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none; /* Hidden by default on mobile */
+            }
+
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: var(--bg);
+                padding: 2rem;
+                border-bottom: 1px solid var(--border);
+                animation: slideDown 0.3s ease;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+
+            .price-card.featured {
+                transform: scale(1);
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">DRIFTNOTE</div>
+                <div class="nav-links" id="navLinks">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#faq">FAQ</a>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A8 8 0 1 1 15.53 3 8 8 0 0 1 21 12.79z"></path><path d="M12 6v12m10-10H2"></path></svg>
+                    </button>
+                </div>
+                <button class="mobile-toggle" id="mobileToggle" aria-label="Open Menu">
+                    ☰
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Your thoughts, kept where they belong.</h1>
+                <p>A local-first, end-to-end encrypted note-taking app that works offline, syncs everywhere, and respects your privacy.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <a href="#pricing" class="btn btn-primary">Get Started Free</a>
+                    <a href="#features" class="btn btn-outline">See Features</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Built for the modern workflow</h2>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h3>Local-First</h3>
+                        <p>Your notes live on your device. No latency, no "cloud" check, just instant performance and offline access.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>E2E Encryption</h3>
+                        <p>We don't hold your keys. Your data is encrypted before it ever leaves your device during sync.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Markdown Native</h3>
+                        <p>Write in the format you love. Rich formatting, code blocks, and LaTeX support out of the box.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pricing" class="pricing">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Simple, Transparent Pricing</h2>
+                </div>
+                <div class="pricing-grid">
+                    <div class="price-card">
+                        <h3>Starter</h3>
+                        <div class="price-value">$0<span>/mo</span></div>
+                        <p>Perfect for personal notes and quick thoughts.</p>
+                        <ul style="margin: 2rem 0; text-align: left;">
+                            <li>✓ Unlimited Notes</li>
+                            <li>✓ Markdown Support</li>
+                            <li>✓ Mobile App</li>
+                            <li style="color: var(--text-secondary)">✕ Cloud Sync</li>
+                        </ul>
+                        <a href="#" class="btn btn-outline">Start Free</a>
+                    </div>
+                    <div class="price-card featured">
+                        <div class="badge">RECOMMENDED</div>
+                        <h3>Pro</h3>
+                        <div class="price-value">$8<span>/mo</span></div>
+                        <p>For power users who need seamless synchronization.</p>
+                        <ul style="margin: 2rem 0; text-align: left;">
+                            <li>✓ Everything in Starter</li>
+                            <li>✓ Unlimited Cloud Sync</li>
+                            <li>✓ Collaboration Tools</li>
+                            <li>✓ Custom Domains</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary">Go Pro</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="faq">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Frequently Asked Questions</h2>
+                </div>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <button class="faq-btn" aria-expanded="false" aria-controls="faq-1">
+                            Is my data really safe?
+                        </button>
+                        <div id="faq-1" class="faq-content">
+                            <p>Yes. Driftnote uses AES-256 encryption for all synced data. We never have access to your keys or the plain-text content of your notes.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-btn" aria-expanded="false" aria-controls="faq-2">
+                            Does it work offline?
+                        </button>
+                        <div id="faq-2" class="faq-content">
+                            <p>Absolutely. Because it is a local-first application, the app functions fully without an internet connection. Syncing happens automatically when you reconnect.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-btn" aria-expanded="false" aria-controls="faq-3">
+                            Can I export my data?
+                        </button>
+                        <div id="faq-3" class="faq-content">
+                            <p>Yes, you can export your entire database as a Markdown folder or a JSON file at any time from the settings menu.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer style="padding: 40px 0; border-top: 1px solid var(--border); text-align: center; font-size: 0.9rem; color: var(--text-secondary);">
+        <div class="container">
+            <p>&copy; 2023 Driftnote Inc. Privacy first, always.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- THEME MANAGEMENT ---
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.documentElement; // Use documentElement to set [data-theme]
+
+        // Check for saved preference or system preference
+        const savedTheme = localStorage.getItem('driftnote-theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            if (current === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('driftnote-theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('driftnote-theme', 'dark');
+            }
+        });
+
+        // --- NAVIGATION ---
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        mobileToggle.addEventListener('click', () => {
+            const isExpanded = navLinks.classList.toggle('active');
+            mobileToggle.setAttribute('aria-expanded', isExpanded);
+        });
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // --- ACCORDION ---
+        const faqButtons = document.querySelectorAll('.faq-btn');
+
+        faqButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const isExpanded = button.getAttribute('aria-expanded') === 'true';
+                const content = button.nextElementSibling;
+
+                // Close all other accordions
+                faqButtons.forEach(otherBtn => {
+                    const otherContent = otherBtn.nextElementSibling;
+                    otherBtn.setAttribute('aria-expanded', 'false');
+                    otherContent.style.maxHeight = null;
+                });
+
+                // If the clicked one wasn't expanded, open it
+                if (!isExpanded) {
+                    button.setAttribute('aria-expanded', 'true');
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Driftnote — a local-first note-taking app. Written to your disk first, synced when you can, owned by you always.">
+<title>Driftnote — local-first notes</title>
+<script>try{var _t=localStorage.getItem('driftnote-theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
+<style>
+/* ============ tokens ============ */
+:root{
+  --paper:#f3efe4; --paper-2:#eae4d3; --card:#faf7ee;
+  --ink:#23201a; --ink-2:#6b6353;
+  --line:#d9d1bc; --line-soft:#e5decb;
+  --accent:#c93d12; --accent-2:#a8320f; --on-accent:#fff6ee;
+  --mark:rgba(244,196,48,.45);
+  --ok:#3c8a5f;
+  --band-bg:#23201a; --band-ink:#f3efe4; --band-2:#a79d87;
+  --shadow:0 22px 44px -20px rgba(35,32,26,.38);
+  --shadow-sm:0 8px 18px -10px rgba(35,32,26,.28);
+  --grain-op:.05;
+  --font-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --paper:#161410; --paper-2:#1d1a14; --card:#211e17;
+    --ink:#ece5d2; --ink-2:#a79d87;
+    --line:#3b3527; --line-soft:#2c2820;
+    --accent:#ff6a3a; --accent-2:#ff8a63; --on-accent:#241009;
+    --mark:rgba(255,205,66,.22);
+    --ok:#5cb98a;
+    --band-bg:#ece5d2; --band-ink:#161410; --band-2:#5c564a;
+    --shadow:0 22px 44px -20px rgba(0,0,0,.65);
+    --shadow-sm:0 8px 18px -10px rgba(0,0,0,.5);
+    --grain-op:.07;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#161410; --paper-2:#1d1a14; --card:#211e17;
+  --ink:#ece5d2; --ink-2:#a79d87;
+  --line:#3b3527; --line-soft:#2c2820;
+  --accent:#ff6a3a; --accent-2:#ff8a63; --on-accent:#241009;
+  --mark:rgba(255,205,66,.22);
+  --ok:#5cb98a;
+  --band-bg:#ece5d2; --band-ink:#161410; --band-2:#5c564a;
+  --shadow:0 22px 44px -20px rgba(0,0,0,.65);
+  --shadow-sm:0 8px 18px -10px rgba(0,0,0,.5);
+  --grain-op:.07;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{ color-scheme:light; }
+
+/* ============ base ============ */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+html,body{ overflow-x:clip; }
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:400 16px/1.6 var(--font-body);
+  -webkit-font-smoothing:antialiased;
+}
+/* paper grain */
+body::after{
+  content:""; position:fixed; inset:0; z-index:2000; pointer-events:none;
+  opacity:var(--grain-op);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.55'/></svg>");
+}
+::selection{ background:var(--accent); color:var(--on-accent); }
+img,svg{ display:block; max-width:100%; }
+a{ color:inherit; }
+:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
+.wrap{ max-width:1180px; margin-inline:auto; padding-inline:clamp(1rem,4vw,2rem); }
+.skip{
+  position:absolute; left:1rem; top:-4rem; z-index:3000;
+  background:var(--accent); color:var(--on-accent);
+  padding:.6rem 1rem; border-radius:8px; font-weight:600; text-decoration:none;
+  transition:top .2s;
+}
+.skip:focus{ top:1rem; }
+mark{ background:var(--mark); color:inherit; padding:0 .18em; border-radius:2px; }
+
+/* type helpers */
+.eyebrow{
+  display:inline-flex; align-items:center; gap:.55rem;
+  font:500 11.5px/1 var(--font-mono); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-2); margin:0 0 1.1rem;
+}
+.eyebrow::before{ content:""; width:22px; height:1.5px; background:var(--accent); }
+.h1{
+  font-family:var(--font-display); font-weight:600;
+  font-size:clamp(2.55rem,7vw,4.35rem); line-height:1.04; letter-spacing:-.015em;
+  margin:0 0 1.25rem;
+}
+.h1 em{ font-style:italic; color:var(--accent); }
+.h2{
+  font-family:var(--font-display); font-weight:600;
+  font-size:clamp(1.75rem,3.6vw,2.55rem); line-height:1.12; letter-spacing:-.01em;
+  margin:0 0 .9rem;
+}
+.lede{ font-size:1.08rem; color:var(--ink-2); margin:0; max-width:56ch; }
+.sec-head{ margin-bottom:clamp(1.8rem,4vw,2.8rem); }
+
+/* buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  padding:.82rem 1.45rem; border-radius:8px; border:1px solid transparent;
+  font:600 .95rem/1.2 var(--font-body); text-decoration:none; cursor:pointer;
+  transition:background .2s, color .2s, border-color .2s, transform .15s, box-shadow .2s;
+}
+.btn:active{ transform:translateY(1px); }
+.btn-primary{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
+.btn-primary:hover{ background:var(--accent-2); border-color:var(--accent-2); transform:translateY(-1px); box-shadow:var(--shadow-sm); }
+.btn-ghost{ color:var(--ink); border-color:var(--line); background:transparent; }
+.btn-ghost:hover{ border-color:var(--ink); transform:translateY(-1px); }
+.btn-sm{ padding:.55rem 1rem; font-size:.88rem; }
+
+/* ============ header ============ */
+.site-head{
+  position:sticky; top:0; z-index:100;
+  background:var(--paper); border-bottom:1px solid var(--line-soft);
+}
+.head-inner{ display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:64px; }
+.brand{
+  display:inline-flex; align-items:center; gap:.6rem; text-decoration:none;
+  font-family:var(--font-display); font-weight:700; font-size:1.18rem; letter-spacing:-.01em;
+}
+.brand svg{ width:26px; height:26px; color:var(--ink); }
+.brand svg .a{ stroke:var(--accent); }
+.head-right{ display:flex; align-items:center; gap:.6rem; }
+.icon-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:40px; border-radius:8px; border:1px solid var(--line);
+  background:var(--card); color:var(--ink); cursor:pointer;
+  transition:border-color .2s, transform .15s;
+}
+.icon-btn:hover{ border-color:var(--accent); transform:translateY(-1px); }
+.icon-btn svg{ width:18px; height:18px; }
+/* theme icons */
+.icon-sun{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme]) .icon-sun{ display:block; }
+  :root:not([data-theme]) .icon-moon{ display:none; }
+}
+:root[data-theme="dark"] .icon-sun{ display:block; }
+:root[data-theme="dark"] .icon-moon{ display:none; }
+/* nav */
+.site-nav{ display:flex; align-items:center; gap:2.2rem; }
+.nav-links{ display:flex; gap:1.75rem; list-style:none; margin:0; padding:0; }
+.nav-links a{
+  position:relative; text-decoration:none; font-weight:500; font-size:.95rem; color:var(--ink-2);
+  transition:color .2s;
+}
+.nav-links a:hover{ color:var(--ink); }
+.nav-links a::after{
+  content:""; position:absolute; left:0; right:100%; bottom:-5px; height:2px;
+  background:var(--accent); transition:right .25s ease;
+}
+.nav-links a:hover::after{ right:0; }
+.nav-cta{ margin:0; }
+.nav-toggle{
+  display:none; flex-direction:column; justify-content:center; gap:4.5px;
+  width:42px; height:42px; padding:0 9px; border-radius:8px; border:1px solid var(--line);
+  background:var(--card); cursor:pointer;
+}
+.nav-toggle span{ display:block; height:2px; width:100%; background:var(--ink); border-radius:2px; transition:transform .3s, opacity .2s; }
+.nav-toggle.active span:nth-child(1){ transform:translateY(6.5px) rotate(45deg); }
+.nav-toggle.active span:nth-child(2){ opacity:0; }
+.nav-toggle.active span:nth-child(3){ transform:translateY(-6.5px) rotate(-45deg); }
+
+@media (max-width:767.98px){
+  .nav-toggle{ display:inline-flex; }
+  .site-nav{
+    position:absolute; top:100%; left:0; right:0;
+    flex-direction:column; align-items:stretch; gap:0;
+    background:var(--paper); border-bottom:1px solid var(--line);
+    padding:0 clamp(1rem,4vw,2rem);
+    max-height:0; overflow:hidden; visibility:hidden;
+    transition:max-height .35s ease, visibility 0s linear .35s;
+  }
+  .site-nav.open{ max-height:340px; visibility:visible; transition:max-height .35s ease; box-shadow:var(--shadow-sm); }
+  .nav-links{ flex-direction:column; gap:0; width:100%; }
+  .nav-links a{ display:block; padding:.85rem 0; border-bottom:1px solid var(--line-soft); font-size:1rem; }
+  .nav-links a::after{ display:none; }
+  .nav-cta{ margin:1.1rem 0 1.3rem; width:100%; }
+}
+
+/* ============ hero ============ */
+.hero{ padding:clamp(2.8rem,6vw,5.5rem) 0 clamp(2rem,4vw,3.5rem); }
+.hero-grid{ display:grid; gap:clamp(2rem,4vw,3rem); }
+@media (min-width:980px){ .hero-grid{ grid-template-columns:1.02fr .98fr; align-items:center; gap:2rem; } }
+.h1 .line{ display:block; overflow:hidden; padding-bottom:.06em; margin-bottom:-.06em; }
+.h1 .line > span{ display:inline-block; transform:translateY(115%); animation:rise .85s cubic-bezier(.2,.75,.2,1) forwards; }
+.h1 .line:nth-child(2) > span{ animation-delay:.14s; }
+@keyframes rise{ to{ transform:none; } }
+.hero-sub{ font-size:1.08rem; color:var(--ink-2); max-width:52ch; margin:0 0 1.8rem; }
+.cta-row{ display:flex; flex-wrap:wrap; gap:.8rem; margin-bottom:1.2rem; }
+.hero-meta{ font:500 12.5px/1.8 var(--font-mono); color:var(--ink-2); margin:0; }
+.hero-meta b{ color:var(--ink); font-weight:600; }
+
+/* hero stage — drifting notes */
+.hero-stage{ position:relative; height:420px; }
+.drift{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.drift path{ fill:none; stroke:var(--line); stroke-width:2; stroke-dasharray:3 10; stroke-linecap:round; animation:dash 26s linear infinite; }
+@keyframes dash{ to{ stroke-dashoffset:-260; } }
+.note{ position:absolute; will-change:transform; }
+.note-in{
+  position:relative; background:var(--card); border:1px solid var(--line);
+  border-radius:3px; box-shadow:var(--shadow-sm);
+  transform:rotate(var(--rot,0deg));
+  animation:floaty 7s ease-in-out infinite;
+}
+@keyframes floaty{
+  0%,100%{ transform:rotate(var(--rot,0deg)) translateY(0); }
+  50%{ transform:rotate(var(--rot,0deg)) translateY(-9px); }
+}
+.note-in::after{ /* folded corner */
+  content:""; position:absolute; top:0; right:0;
+  border-top:16px solid var(--paper-2); border-left:16px solid transparent;
+}
+.note:nth-child(3) .note-in{ animation-duration:8.5s; animation-delay:-2s; }
+.note:nth-child(4) .note-in{ animation-duration:6.4s; animation-delay:-3.4s; }
+.note:nth-child(5) .note-in{ animation-duration:9s; animation-delay:-1.2s; }
+.note-head{
+  display:flex; justify-content:space-between; align-items:center; gap:1rem;
+  padding:.5rem .8rem; border-bottom:1px dashed var(--line);
+  font:500 10.5px/1 var(--font-mono); letter-spacing:.07em; color:var(--ink-2);
+}
+.note-head .dots{ letter-spacing:.2em; }
+.note-body{ padding:.7rem .9rem 1rem; font:400 13px/1.75 var(--font-mono); }
+.note-body ul{ list-style:none; margin:0; padding:0; }
+.note-body li{ display:flex; align-items:flex-start; gap:.55rem; }
+.note-body li + li{ margin-top:.3rem; }
+.box{
+  flex:none; width:11px; height:11px; margin-top:.42em;
+  border:1.5px solid var(--ink-2); border-radius:2.5px; background:transparent;
+}
+.box.done{ background:var(--accent); border-color:var(--accent); }
+.note-body .strike{ text-decoration:line-through; color:var(--ink-2); }
+.caret{ display:inline-block; width:7px; height:1.05em; margin-left:2px; background:var(--accent); vertical-align:-.18em; animation:blink 1.1s steps(1) infinite; }
+@keyframes blink{ 50%{ opacity:0; } }
+.note-foot{ padding:.45rem .9rem .65rem; font:500 10.5px/1 var(--font-mono); color:var(--ink-2); border-top:1px dashed var(--line); display:flex; align-items:center; gap:.45rem; }
+/* positions — desktop */
+.n1{ left:5%; top:11%; width:300px; z-index:3; }
+.n1 .note-in{ --rot:-3deg; }
+.n2{ right:1%; top:0%; width:236px; z-index:2; }
+.n2 .note-in{ --rot:2.5deg; }
+.n4{ right:6%; bottom:9%; width:252px; z-index:2; }
+.n4 .note-in{ --rot:3.5deg; }
+.n3{ left:14%; bottom:2%; z-index:4; }
+.chip-sync{
+  display:inline-flex; align-items:center; gap:.55rem;
+  background:var(--card); border:1px solid var(--line); border-radius:8px;
+  padding:.6rem .95rem; font:500 12px/1 var(--font-mono); color:var(--ink-2);
+  box-shadow:var(--shadow-sm); transform:rotate(var(--rot,-1.5deg));
+  animation:floaty 8s ease-in-out infinite;
+}
+.dot{ position:relative; width:8px; height:8px; border-radius:50%; background:var(--ok); flex:none; }
+.dot::after{ content:""; position:absolute; inset:-4px; border-radius:50%; border:1px solid var(--ok); animation:ping 2.2s ease-out infinite; }
+@keyframes ping{ 0%{ transform:scale(.4); opacity:1; } 80%,100%{ transform:scale(1.5); opacity:0; } }
+/* tablet / stacked hero */
+@media (max-width:979.98px){
+  .hero-stage{ height:360px; }
+  .n1{ left:2%; top:9%; width:min(300px,72%); }
+  .n2{ right:1%; top:0; width:46%; }
+  .n4{ display:none; }
+  .n3{ left:6%; bottom:1%; }
+}
+@media (max-width:480px){
+  .hero-stage{ height:300px; }
+  .n1{ width:76%; }
+  .n2{ width:52%; }
+  .note-body{ font-size:12.5px; }
+}
+
+/* ============ stats ============ */
+.stats{ border-block:1px solid var(--line); background:var(--paper-2); }
+.stats-grid{ display:grid; grid-template-columns:repeat(2,1fr); }
+@media (min-width:768px){ .stats-grid{ grid-template-columns:repeat(4,1fr); } }
+.stat{ padding:1.5rem 1.4rem; border-left:1px solid var(--line-soft); }
+.stat:first-child{ border-left:0; }
+@media (max-width:767.98px){ .stat:nth-child(3){ border-left:0; } }
+.stat b{ display:block; font-family:var(--font-display); font-weight:600; font-size:clamp(1.7rem,3vw,2.15rem); letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+.stat span{ font:500 11px/1.5 var(--font-mono); letter-spacing:.13em; text-transform:uppercase; color:var(--ink-2); }
+
+/* ============ features ============ */
+.features{ padding:clamp(3.2rem,7vw,5.8rem) 0; }
+.feat-grid{ display:grid; gap:1.25rem; grid-template-columns:1fr; }
+@media (min-width:768px){ .feat-grid{ grid-template-columns:repeat(3,1fr); } }
+.feature{
+  position:relative; background:var(--card); border:1px solid var(--line); border-radius:10px;
+  padding:1.5rem 1.4rem 1.4rem;
+  transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.feature:hover{ transform:translateY(-4px); border-color:var(--accent); box-shadow:var(--shadow-sm); }
+.feature .num{ font:600 11px/1 var(--font-mono); letter-spacing:.15em; color:var(--accent); }
+.feature .f-icon{
+  width:42px; height:42px; margin:.9rem 0 1rem; border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--paper-2); border:1px solid var(--line-soft); color:var(--ink);
+  transition:transform .25s ease;
+}
+.feature:hover .f-icon{ transform:translateY(-2px) rotate(-4deg); }
+.feature .f-icon svg{ width:21px; height:21px; }
+.feature h3{ margin:0 0 .5rem; font-size:1.12rem; font-weight:650; letter-spacing:-.005em; }
+.feature p{ margin:0; font-size:.94rem; color:var(--ink-2); }
+.feature ul{ list-style:none; margin:1.05rem 0 0; padding:0; }
+.feature li{ position:relative; padding-left:1.15rem; font-size:.9rem; color:var(--ink-2); }
+.feature li + li{ margin-top:.45rem; }
+.feature li::before{ content:""; position:absolute; left:0; top:.48em; width:6px; height:6px; background:var(--accent); transform:rotate(45deg); }
+
+/* ============ quote ============ */
+.quote{ background:var(--paper-2); border-block:1px solid var(--line); padding:clamp(2.6rem,6vw,4.5rem) 0; }
+.quote blockquote{ margin:0; max-width:760px; }
+.quote p{
+  font-family:var(--font-display); font-style:italic; font-weight:500;
+  font-size:clamp(1.25rem,2.6vw,1.7rem); line-height:1.4; margin:0 0 1.1rem;
+}
+.quote p::before{ content:"“"; color:var(--accent); }
+.quote p::after{ content:"”"; color:var(--accent); }
+.quote cite{ font:500 12px/1.6 var(--font-mono); font-style:normal; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); }
+
+/* ============ pricing ============ */
+.pricing{ padding:clamp(3.2rem,7vw,5.8rem) 0; }
+.price-grid{ display:grid; gap:1.5rem; grid-template-columns:1fr; max-width:880px; }
+@media (min-width:700px){
+  .price-grid{ grid-template-columns:1fr 1fr; align-items:stretch; }
+  .tier.recommended{ transform:translateY(-10px); }
+}
+.tier{
+  position:relative; display:flex; flex-direction:column;
+  background:var(--card); border:1px solid var(--line); border-radius:12px; padding:1.7rem 1.6rem 1.6rem;
+}
+.tier.recommended{ border:1.5px solid var(--accent); box-shadow:var(--shadow); }
+.badge{
+  position:absolute; top:-13px; left:1.5rem;
+  background:var(--accent); color:var(--on-accent);
+  font:600 10.5px/1 var(--font-mono); letter-spacing:.14em; text-transform:uppercase;
+  padding:.42rem .8rem; border-radius:999px;
+}
+.tier h3{ margin:0; font-size:1.05rem; font-weight:650; letter-spacing:.01em; }
+.tier .t-desc{ margin:.3rem 0 1.2rem; font-size:.92rem; color:var(--ink-2); }
+.price-line{ display:flex; align-items:baseline; gap:.45rem; margin-bottom:1.3rem; }
+.price-line .amount{ font-family:var(--font-display); font-weight:600; font-size:2.7rem; letter-spacing:-.02em; line-height:1; }
+.price-line .per{ font:500 12px/1.4 var(--font-mono); color:var(--ink-2); }
+.tier ul{ list-style:none; margin:0 0 1.6rem; padding:0; flex:1; }
+.tier li{ position:relative; padding-left:1.6rem; font-size:.93rem; color:var(--ink-2); }
+.tier li + li{ margin-top:.6rem; }
+.tier li::before{
+  content:""; position:absolute; left:0; top:.15em; width:15px; height:15px;
+  background:var(--accent) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12.5l5 5L20 6.5'/></svg>") center/10px no-repeat;
+  border-radius:50%;
+}
+.price-note{ text-align:center; font:500 12px/1.6 var(--font-mono); color:var(--ink-2); margin:1.6rem 0 0; }
+
+/* ============ FAQ ============ */
+.faq{ padding:clamp(3.2rem,7vw,5.8rem) 0; }
+.faq-list{ list-style:none; margin:0; padding:0; max-width:760px; border-top:1px solid var(--line); }
+.faq-item{ border-bottom:1px solid var(--line); }
+.faq-h{ margin:0; }
+.faq-q{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:1.15rem .2rem; background:none; border:0; cursor:pointer; text-align:left;
+  font:600 1.04rem/1.4 var(--font-body); color:var(--ink);
+  transition:color .2s;
+}
+.faq-q:hover{ color:var(--accent); }
+.faq-q .ind{ flex:none; width:26px; height:26px; border:1px solid var(--line); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--ink-2); transition:transform .3s ease, border-color .3s, color .3s; }
+.faq-q .ind svg{ width:13px; height:13px; }
+.faq-item.open .ind{ transform:rotate(45deg); border-color:var(--accent); color:var(--accent); }
+.faq-a{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .38s cubic-bezier(.2,.7,.2,1); }
+.faq-item.open .faq-a{ grid-template-rows:1fr; }
+.faq-a-in{ overflow:hidden; visibility:hidden; transition:visibility .38s; }
+.faq-item.open .faq-a-in{ visibility:visible; }
+.faq-a p{ margin:0; padding:0 .2rem 1.3rem; color:var(--ink-2); max-width:62ch; font-size:.96rem; }
+
+/* ============ CTA band ============ */
+.cta-band{ background:var(--band-bg); color:var(--band-ink); }
+.band-inner{ display:flex; flex-wrap:wrap; gap:1.6rem 2.5rem; align-items:center; justify-content:space-between; padding-block:clamp(2.6rem,5vw,4rem); }
+.band-inner h2{ font-family:var(--font-display); font-weight:600; font-size:clamp(1.6rem,3.2vw,2.3rem); letter-spacing:-.01em; margin:0 0 .45rem; line-height:1.15; }
+.band-inner p{ margin:0; font:500 12.5px/1.7 var(--font-mono); color:var(--band-2); }
+.band-side{ display:flex; flex-direction:column; gap:.6rem; align-items:flex-start; }
+
+/* ============ footer ============ */
+.site-foot{ border-top:1px solid var(--line); padding:clamp(2.4rem,5vw,3.6rem) 0 1.8rem; }
+.foot-grid{ display:grid; gap:2rem; margin-bottom:2.4rem; }
+@media (min-width:768px){ .foot-grid{ grid-template-columns:1.6fr 1fr 1fr; } }
+.foot-brand p{ margin:.9rem 0 0; color:var(--ink-2); font-size:.93rem; max-width:30ch; }
+.foot-col h4{ margin:0 0 .8rem; font:600 11px/1 var(--font-mono); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-2); }
+.foot-col ul{ list-style:none; margin:0; padding:0; }
+.foot-col li + li{ margin-top:.55rem; }
+.foot-col a{ text-decoration:none; color:var(--ink-2); font-size:.93rem; transition:color .2s; }
+.foot-col a:hover{ color:var(--accent); }
+.foot-bottom{
+  display:flex; flex-wrap:wrap; gap:.8rem 2rem; justify-content:space-between; align-items:center;
+  border-top:1px solid var(--line-soft); padding-top:1.3rem;
+  font:500 11.5px/1.6 var(--font-mono); color:var(--ink-2);
+}
+.status{ display:inline-flex; align-items:center; gap:.5rem; }
+
+/* ============ reveal ============ */
+.js [data-reveal]{ opacity:0; transform:translateY(20px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); transition-delay:var(--d,0s); }
+.js [data-reveal].in{ opacity:1; transform:none; }
+
+/* ============ reduced motion ============ */
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  *,*::before,*::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ================= HEADER ================= -->
+<header class="site-head">
+  <div class="wrap head-inner">
+    <a class="brand" href="#top" aria-label="Driftnote — home">
+      <svg viewBox="0 0 28 28" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 2.5h12.5L23 8v17.5H5z"/>
+        <path d="M17.5 2.5V8H23"/>
+        <path class="a" d="M9 13.5h10M9 17.5h6.5"/>
+      </svg>
+      Driftnote
+    </a>
+
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <a class="btn btn-primary btn-sm nav-cta" href="#pricing">Get Driftnote</a>
+    </nav>
+
+    <div class="head-right">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5 5l1.7 1.7M17.3 17.3 19 19M19 5l-1.7 1.7M6.7 17.3 5 19"/></svg>
+      </button>
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">Local-first · v2.4 — CRDT sync shipped</p>
+      <h1 class="h1" id="hero-title">
+        <span class="line"><span>Write first.</span></span>
+        <span class="line"><span>Sync <em>later.</em></span></span>
+      </h1>
+      <p class="hero-sub">Driftnote is a local-first note app for people who think in text. Your words are written to your disk before anything else — it opens in 12&nbsp;ms, works offline forever, and quietly syncs across devices only when you can.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#pricing">Download for free</a>
+        <a class="btn btn-ghost" href="#features">See how it works</a>
+      </div>
+      <p class="hero-meta"><b>macOS · Windows · Linux</b> — 4 MB · no account · plain Markdown</p>
+    </div>
+
+    <div class="hero-stage" aria-hidden="true">
+      <svg class="drift" viewBox="0 0 520 460" preserveAspectRatio="none">
+        <path d="M-20 390 C 110 330, 170 430, 290 270 S 470 130, 545 55"/>
+      </svg>
+
+      <div class="note n2" data-depth="16">
+        <div class="note-in">
+          <div class="note-head"><span>reading_list.md</span><span class="dots">···</span></div>
+          <div class="note-body">
+            <ul>
+              <li><span class="box done"></span>The Timeless Way of Building</li>
+              <li><span class="box done"></span>A Philosophy of Software Design</li>
+              <li><span class="box"></span><span><mark>The Design of Everyday Things</mark></span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="note n1" data-depth="8">
+        <div class="note-in">
+          <div class="note-head"><span>today.md</span><span class="dots">···</span></div>
+          <div class="note-body">
+            <ul>
+              <li><span class="box done"></span><span class="strike">water the fern</span></li>
+              <li><span class="box done"></span>call the framer back</li>
+              <li><span class="box"></span>draft: “notes that drift home”</li>
+              <li><span class="box"></span>ship 2.4 to the beta ring<span class="caret"></span></li>
+            </ul>
+          </div>
+          <div class="note-foot"><span class="dot"></span>saved locally · just now</div>
+        </div>
+      </div>
+
+      <div class="note n4" data-depth="22">
+        <div class="note-in">
+          <div class="note-head"><span>flatbread.md</span><span class="dots">···</span></div>
+          <div class="note-body">
+            <ul>
+              <li>oats · yoghurt · a little olive oil</li>
+              <li>rest 1 h — bake 8 min, hot stone</li>
+              <li><span>note: <mark>two eggs</mark> next time</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="note n3" data-depth="12">
+        <div class="chip-sync"><span class="dot"></span>3 devices · 0 conflicts</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="stats" aria-label="Driftnote by the numbers">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat" data-reveal><b data-count="12" data-suffix=" ms">0 ms</b><span>median open time</span></div>
+      <div class="stat" data-reveal style="--d:.08s"><b data-count="0">0</b><span>bytes held by us</span></div>
+      <div class="stat" data-reveal style="--d:.16s"><b data-count="7" data-suffix=" days">0 days</b><span>history on Free</span></div>
+      <div class="stat" data-reveal style="--d:.24s"><b data-count="100" data-suffix="%">0%</b><span>plain Markdown</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="features" id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <p class="eyebrow">Why local-first</p>
+      <h2 class="h2" id="features-title">Built around the disk,<br>not the cloud.</h2>
+      <p class="lede">The network is treated as a convenience, never a dependency. Here’s what that buys you every day.</p>
+    </div>
+
+    <div class="feat-grid">
+      <article class="feature" data-reveal>
+        <span class="num">01</span>
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.2-4.5L16.5 4.2a2.1 2.1 0 0 1 3 3L8.2 18.5 4 20z"/><path d="M13.5 7.2l3 3"/></svg>
+        </div>
+        <h3>Written to disk first</h3>
+        <p>Every keystroke lands in a local store before anything else happens. Open, edit, search — the network is an afterthought, not a dependency.</p>
+        <ul>
+          <li>12 ms median open time</li>
+          <li>Works in airplane mode, forever</li>
+          <li>Plain Markdown sitting on disk</li>
+        </ul>
+      </article>
+
+      <article class="feature" data-reveal style="--d:.1s">
+        <span class="num">02</span>
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><path d="M20 3.5v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><path d="M4 20.5v-5h5"/></svg>
+        </div>
+        <h3>Sync that keeps every word</h3>
+        <p>Driftnote merges changes with CRDTs, so two devices editing the same line both win. Conflicts resolve themselves, character by character.</p>
+        <ul>
+          <li>Merge, never overwrite</li>
+          <li>End-to-end encrypted in transit</li>
+          <li>LAN sync when you’re off the grid</li>
+        </ul>
+      </article>
+
+      <article class="feature" data-reveal style="--d:.2s">
+        <span class="num">03</span>
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/><path d="M7.5 10.5h6M7.5 13h4"/></svg>
+        </div>
+        <h3>Search that feels instant</h3>
+        <p>A local index, built as you type, finds anything in milliseconds — across every note, tag, and draft, even before you’re connected.</p>
+        <ul>
+          <li>Full-text, entirely offline</li>
+          <li>Filter by tag, date, or nothing</li>
+          <li>One-click export, zero lock-in</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUOTE ================= -->
+<section class="quote" aria-label="A note from a user">
+  <div class="wrap">
+    <blockquote data-reveal>
+      <p>I cut the Wi-Fi mid-sentence and kept typing. Driftnote didn’t even blink — it just wrote to my disk like the cloud had never existed.</p>
+      <cite>— Mara O., keeps field notes on a mountain bike</cite>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ================= PRICING ================= -->
+<section class="pricing" id="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <p class="eyebrow">Pricing</p>
+      <h2 class="h2" id="pricing-title">Simple pricing, no surprises.</h2>
+      <p class="lede">Free is genuinely free. Pro pays for the sync engine and nothing else.</p>
+    </div>
+
+    <div class="price-grid">
+      <article class="tier" data-reveal>
+        <h3>Free</h3>
+        <p class="t-desc">For solo thinking, on one machine.</p>
+        <div class="price-line"><span class="amount">$0</span><span class="per">forever, no card</span></div>
+        <ul>
+          <li>Unlimited notes, fully offline</li>
+          <li>One device, 7-day version history</li>
+          <li>Markdown, plain text, drag &amp; drop</li>
+          <li>Instant local search</li>
+          <li>Manual export &amp; import</li>
+        </ul>
+        <a class="btn btn-ghost" href="#faq">Start free</a>
+      </article>
+
+      <article class="tier recommended" data-reveal style="--d:.12s">
+        <span class="badge">Recommended</span>
+        <h3>Pro</h3>
+        <p class="t-desc">Your whole notebook, on every device.</p>
+        <div class="price-line"><span class="amount">$4</span><span class="per">/ month, billed yearly<br>($6 if billed monthly)</span></div>
+        <ul>
+          <li>Everything in Free, on every device</li>
+          <li>Conflict-free sync, end-to-end encrypted</li>
+          <li>90-day version history</li>
+          <li>Offline inbox + LAN sync</li>
+          <li>Priority support from actual humans</li>
+        </ul>
+        <a class="btn btn-primary" href="#faq">Get Pro</a>
+      </article>
+    </div>
+    <p class="price-note" data-reveal>Prices in USD. No trial clock, no card for Free, cancel anytime — your notes were never the hostage.</p>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="faq" id="faq" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <p class="eyebrow">FAQ</p>
+      <h2 class="h2" id="faq-title">Questions, answered.</h2>
+    </div>
+
+    <ul class="faq-list" data-reveal>
+      <li class="faq-item open">
+        <h3 class="faq-h"><button class="faq-q" type="button" id="faq-b1" aria-expanded="true" aria-controls="faq-p1">
+          Where do my notes actually live?
+          <span class="ind" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button></h3>
+        <div class="faq-a" id="faq-p1" role="region" aria-labelledby="faq-b1"><div class="faq-a-in">
+          <p>On your device, in a local store you can open with any file browser. Driftnote keeps a clean Markdown mirror of everything, so your source of truth is yours — the cloud, if you use it, is just an encrypted mirror.</p>
+        </div></div>
+      </li>
+      <li class="faq-item">
+        <h3 class="faq-h"><button class="faq-q" type="button" id="faq-b2" aria-expanded="false" aria-controls="faq-p2">
+          What happens when I’m offline?
+          <span class="ind" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button></h3>
+        <div class="faq-a" id="faq-p2" role="region" aria-labelledby="faq-b2"><div class="faq-a-in">
+          <p>Nothing changes. Everything — writing, search, history, tags — works with no connection at all. Changes queue locally and merge the moment any network appears, including a plain Wi-Fi network on another device.</p>
+        </div></div>
+      </li>
+      <li class="faq-item">
+        <h3 class="faq-h"><button class="faq-q" type="button" id="faq-b3" aria-expanded="false" aria-controls="faq-p3">
+          How does sync resolve conflicts?
+          <span class="ind" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button></h3>
+        <div class="faq-a" id="faq-p3" role="region" aria-labelledby="faq-b3"><div class="faq-a-in">
+          <p>With CRDTs — the same kind of merge engine behind collaborative editors. Edits combine deterministically at the character level, so both phrasings survive as far as the text allows. There is no “server copy wins,” ever.</p>
+        </div></div>
+      </li>
+      <li class="faq-item">
+        <h3 class="faq-h"><button class="faq-q" type="button" id="faq-b4" aria-expanded="false" aria-controls="faq-p4">
+          Can I get my data out?
+          <span class="ind" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button></h3>
+        <div class="faq-a" id="faq-p4" role="region" aria-labelledby="faq-b4"><div class="faq-a-in">
+          <p>Anytime, in one click: a folder of plain Markdown files, a zipped archive, or the raw store itself. No proprietary format, no export fee, no “contact support” — just files.</p>
+        </div></div>
+      </li>
+      <li class="faq-item">
+        <h3 class="faq-h"><button class="faq-q" type="button" id="faq-b5" aria-expanded="false" aria-controls="faq-p5">
+          Which platforms are supported?
+          <span class="ind" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button></h3>
+        <div class="faq-a" id="faq-p5" role="region" aria-labelledby="faq-b5"><div class="faq-a-in">
+          <p>macOS 12+, Windows 10+, and Ubuntu/Debian 22.04+ are first-class today. iOS and Android are in open beta for Pro subscribers — same local store, same sync, smaller download.</p>
+        </div></div>
+      </li>
+      <li class="faq-item">
+        <h3 class="faq-h"><button class="faq-q" type="button" id="faq-b6" aria-expanded="false" aria-controls="faq-p6">
+          Is Pro required to sync?
+          <span class="ind" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button></h3>
+        <div class="faq-a" id="faq-p6" role="region" aria-labelledby="faq-b6"><div class="faq-a-in">
+          <p>Free is fully local on a single device, with manual export and import between machines. Pro is what unlocks multi-device sync, encryption in transit, and the longer version history. Your notes work the same either way.</p>
+        </div></div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= CTA BAND ================= -->
+<section class="cta-band" aria-labelledby="cta-title">
+  <div class="wrap band-inner">
+    <div data-reveal>
+      <h2 id="cta-title">Your thoughts already live on your machine.<br>Give them a home.</h2>
+      <p>Free tier · 4 MB · macOS, Windows, Linux · no account</p>
+    </div>
+    <div class="band-side" data-reveal style="--d:.1s">
+      <a class="btn btn-primary" href="#pricing">Download Driftnote</a>
+      <a class="btn btn-ghost" href="#features" style="color:var(--band-ink); border-color:currentColor;">Read the features again</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="#top" aria-label="Driftnote — home">
+          <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 2.5h12.5L23 8v17.5H5z"/><path d="M17.5 2.5V8H23"/><path class="a" d="M9 13.5h10M9 17.5h6.5"/>
+          </svg>
+          Driftnote
+        </a>
+        <p>Local-first notes for people who think in text. Written down, owned by you, wherever you drift.</p>
+      </div>
+      <nav class="foot-col" aria-label="Product">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <div class="foot-col">
+        <h4>Elsewhere</h4>
+        <ul>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Status</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2025 Driftnote Labs — all notes stay home.</span>
+      <span class="status"><span class="dot" aria-hidden="true"></span>all local systems nominal</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+  root.classList.add('js');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+  /* ---------- theme toggle (overrides system, persists) ---------- */
+  var themeBtn = document.getElementById('theme-toggle');
+  function appliedTheme(){
+    return root.getAttribute('data-theme') || (mqDark.matches ? 'dark' : 'light');
+  }
+  function syncThemeBtn(){
+    var next = appliedTheme() === 'dark' ? 'light' : 'dark';
+    themeBtn.setAttribute('aria-label', 'Switch to ' + next + ' mode');
+    themeBtn.title = 'Switch to ' + next + ' mode';
+  }
+  themeBtn.addEventListener('click', function(){
+    var next = appliedTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('driftnote-theme', next); } catch(e){}
+    syncThemeBtn();
+  });
+  syncThemeBtn();
+
+  /* ---------- mobile nav ---------- */
+  var navToggle = document.getElementById('nav-toggle');
+  var nav = document.getElementById('site-nav');
+  function setNav(open){
+    nav.classList.toggle('open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+    navToggle.classList.toggle('active', open);
+    navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Toggle menu');
+  }
+  navToggle.addEventListener('click', function(){ setNav(!nav.classList.contains('open')); });
+  nav.addEventListener('click', function(e){ if (e.target.closest('a')) setNav(false); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && nav.classList.contains('open')) { setNav(false); navToggle.focus(); }
+  });
+  document.addEventListener('click', function(e){
+    if (nav.classList.contains('open') && !e.target.closest('.site-head')) setNav(false);
+  });
+  var mqMobile = window.matchMedia('(min-width: 768px)');
+  if (mqMobile.addEventListener) mqMobile.addEventListener('change', function(e){ if (e.matches) setNav(false); });
+
+  /* ---------- scroll reveals ---------- */
+  var revealEls = document.querySelectorAll('[data-reveal]');
+  if ('IntersectionObserver' in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: .15, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---------- stat count-up ---------- */
+  var statWrap = document.querySelector('.stats');
+  function runCounts(){
+    statWrap.querySelectorAll('[data-count]').forEach(function(el){
+      var end = parseInt(el.getAttribute('data-count'), 10);
+      var suf = el.getAttribute('data-suffix') || '';
+      if (reduced || !window.requestAnimationFrame){ el.textContent = end + suf; return; }
+      var t0 = performance.now(), dur = 1200;
+      function frame(t){
+        var p = Math.min(1, (t - t0) / dur);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(end * eased) + suf;
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+  if (statWrap){
+    if ('IntersectionObserver' in window && !reduced){
+      var so = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){ if (en.isIntersecting){ runCounts(); so.disconnect(); } });
+      }, { threshold: .4 });
+      so.observe(statWrap);
+    } else { runCounts(); }
+  }
+
+  /* ---------- hero note parallax ---------- */
+  var stage = document.querySelector('.hero-stage');
+  if (stage && !reduced && window.matchMedia('(pointer: fine)').matches){
+    var notes = Array.prototype.slice.call(stage.querySelectorAll('.note'));
+    var raf = null;
+    stage.addEventListener('pointermove', function(e){
+      if (raf) return;
+      var r = stage.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - .5;
+      var y = (e.clientY - r.top) / r.height - .5;
+      raf = requestAnimationFrame(function(){
+        raf = null;
+        notes.forEach(function(n){
+          var d = parseFloat(n.getAttribute('data-depth')) || 10;
+          n.style.transform = 'translate3d(' + (-x * d).toFixed(1) + 'px,' + (-y * d).toFixed(1) + 'px,0)';
+        });
+      });
+    });
+    stage.addEventListener('pointerleave', function(){
+      notes.forEach(function(n){ n.style.transform = ''; });
+    });
+  }
+
+  /* ---------- FAQ accordion (one open at a time) ---------- */
+  var items = Array.prototype.slice.call(document.querySelectorAll('.faq-item'));
+  items.forEach(function(item){
+    var btn = item.querySelector('.faq-q');
+    btn.addEventListener('click', function(){
+      var wasOpen = item.classList.contains('open');
+      items.forEach(function(i){
+        i.classList.remove('open');
+        i.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+      });
+      if (!wasOpen){
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

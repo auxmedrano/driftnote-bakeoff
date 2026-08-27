@@ -1,0 +1,87 @@
+# Driftnote Landing Page — Design Plan
+
+## 1. COLOR PALETTE
+
+- **background** — `#F7F5F0` (light) / `#0F1117` (dark): a warm off-white in light mode evokes paper and calm focus, fitting a local-first note-taking app; the near-black dark mode is slightly blue-tinted to feel like a focused, low-glare writing surface rather than pure black.
+- **surface** — `#FFFFFF` (light) / `#171A23` (dark): card and panel color that sits a step above the background so feature cards, pricing tiers, and FAQ rows lift off the page without harsh contrast.
+- **ink (primary text)** — `#1A1A1D` (light) / `#F2F2F5` (dark): near-black / near-white body and heading text chosen for maximum readability against both backgrounds while keeping a touch of softness so large display type isn't harsh.
+- **muted text** — `#5C5C66` (light) / `#9BA0AE` (dark): secondary copy (subheadlines, descriptions, footer links) with reduced contrast to establish hierarchy without dropping below accessible contrast ratios on their backgrounds.
+- **border** — `#E4E0D6` (light) / `#2A2E3A` (dark): low-contrast hairlines for cards, dividers, and inputs; warm in light mode to match the paper tone, cool in dark mode to match the surface.
+- **accent** — `#2F6B5E` (light) / `#4FC3A5` (dark): a muted pine/teal green that reads as "calm, local, and private" — the green avoids the saturated blue of typical SaaS while the lighter dark-mode variant ensures the accent stays vivid and clickable on the dark surface.
+- **accent-text** — `#FFFFFF` (light) / `#0F1117` (dark): text placed on the accent (primary CTA button, recommended-tier badge) — white on the darker light-mode accent, dark on the lighter dark-mode accent, each chosen to keep contrast at or above 4.5:1.
+
+## 2. TYPOGRAPHY
+
+- **Display / headings** — stack: `ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif`, rendered with tight letter-spacing (`-0.02em`) and a heavier weight (700) to give headlines presence without a web font.
+- **Body / UI** — same system sans stack at normal weight (400/500) with relaxed line-height (1.6) for comfortable reading.
+- **Optional code/mono accent** — `ui-monospace, "SF Mono", Menlo, Consolas, monospace` used sparingly for small labels like "local-first" or the recommended badge to reinforce the "your data, on your machine" angle.
+- **Type scale (fluid, using clamp where sensible):**
+  - Hero headline: ~48px desktop → ~32px mobile
+  - Section headings (features, pricing, FAQ): ~36px → ~28px
+  - Subheadlines / lead copy: ~18–20px
+  - Body / card text: ~16px
+  - Small labels / captions / footer: ~13–14px
+  - Buttons: ~16px, medium weight
+
+## 3. LAYOUT
+
+**Header**
+- 1440px: sticky bar, max-width container (~1100–1200px) centered; wordmark left, horizontal nav links + theme toggle right; generous vertical padding.
+- 768px: nav still inline if it fits; otherwise transitions to hamburger. Theme toggle remains visible.
+- 375px: wordmark left, hamburger button + theme toggle right; nav links hidden by default and revealed as a full-width dropdown panel below the bar when open.
+
+**Hero**
+- 1440px: centered single column (max-width ~720px), stacked vertically — headline, subheadline, CTA button; ample vertical whitespace.
+- 768px: same centered single column, slightly reduced headline size and padding.
+- 375px: single column, headline wraps to ~3 lines, CTA button full-width for easy thumb reach.
+
+**Features**
+- 1440px: 3 equal columns with gap; each card has an icon, title, short description.
+- 768px: 3 columns tightened, or 2+1 depending on width; keeps 3-up if readable.
+- 375px: 1 column, cards stacked full-width.
+
+**Pricing**
+- 1440px: 2 equal columns side by side; Pro (or the chosen tier) visually marked as "recommended" via accent border/badge and slightly elevated surface.
+- 768px: 2 columns remain side by side (compact).
+- 375px: 2 columns stack into 1, recommended tier first.
+
+**FAQ**
+- 1440px: single centered column, max-width ~720px; each item a full-width row.
+- 768px: same single column, slightly reduced padding.
+- 375px: single column, full-width; question text may wrap, answer collapses beneath.
+
+**Footer**
+- 1440px: multi-column (brand blurb + link groups) within centered container.
+- 768px: columns wrap to 2.
+- 375px: single column, stacked, reduced padding.
+
+## 4. ACCORDION BEHAVIOR
+
+- Each FAQ item is a button (the question) controlling a hidden answer region.
+- **On click (or Enter/Space on the focused button):**
+  - If the clicked item is currently collapsed: collapse every other open item (set their button `aria-expanded` to `false`, hide their answer region), then expand the clicked item (set its `aria-expanded` to `true`, reveal its answer region).
+  - If the clicked item is currently expanded: collapse it (set `aria-expanded` to `false`, hide its answer). This allows toggling the single open item closed, so zero items can be open.
+- **Only-one-open guarantee:** a single source of truth (e.g., tracking the currently open item, or simply iterating all items and closing all before opening the target) ensures that after any interaction at most one answer region is visible. There is no code path that opens a second item without first closing the first.
+- **Answer reveal:** the answer region's visibility is toggled via a class/attribute; height is animated smoothly (measured height → 0) so it doesn't jump, and content is not focusable while collapsed.
+
+## 5. ACCESSIBILITY CHECKLIST
+
+- **Mobile menu toggle (hamburger):**
+  - `aria-expanded` (true/false) reflecting menu state.
+  - `aria-controls` pointing to the nav panel's `id`.
+  - `aria-label` such as "Open menu" / "Close menu" (or "Menu").
+  - Keyboard: native `<button>`, so Enter/Space activate; focus visible; Esc closes the open menu and returns focus to the toggle.
+- **Theme toggle:**
+  - Native `<button>` with `aria-label` describing the action (e.g., "Switch to dark mode" / "Switch to light mode").
+  - Keyboard: Enter/Space toggles; persistent focus style.
+- **FAQ accordion:**
+  - Each question is a `<button>` with `aria-expanded` and `aria-controls` referencing its answer region `id`.
+  - Answer region: `id` target; when collapsed, marked hidden (`hidden` attribute and/or `aria-hidden` + removed from tab order) so collapsed content isn't accidentally tabbed; when expanded, revealed and focusable.
+  - Keyboard: buttons are natively focusable and operable with Enter/Space; arrow-key navigation between items is optional but recommended (Up/Down move focus between question buttons, Home/End to first/last).
+  - Focus indicator visible on the focused question button.
+- **General:**
+  - All interactive elements are native `<button>`/`<a>` (no click-only `div`s), ensuring keyboard operability by default.
+  - Visible `:focus-visible` styles on every interactive element (nav links, hamburger, theme toggle, CTA, pricing buttons, FAQ buttons).
+  - Color contrast meets 4.5:1 for body text and 3:1 for large text against their backgrounds (per palette choices above).
+  - Landmarks: `<header>`, `<main>`, `<section>` (with headings), `<footer>` for screen-reader structure.
+  - Color-scheme preference respected via `prefers-color-scheme`, with the manual toggle overriding it without breaking any of the above interactive/aria behavior.

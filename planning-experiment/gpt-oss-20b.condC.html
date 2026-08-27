@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Driftnote – Note‑Taking for Your Local World</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Color Palette */
+:root {
+  --bg: #F7F9FC;
+  --surface: #FFFFFF;
+  --ink: #111111;
+  --muted: #5A5A5A;
+  --border: #E0E0E0;
+  --accent: #5C6BC0;
+  --accent-text: #FFFFFF;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --surface: #1E1E1E;
+    --ink: #E5E5E5;
+    --muted: #A0A0A0;
+    --border: #333333;
+  }
+}
+[data-theme="light"] {
+  --bg: #F7F9FC;
+  --surface: #FFFFFF;
+  --ink: #111111;
+  --muted: #5A5A5A;
+  --border: #E0E0E0;
+}
+[data-theme="dark"] {
+  --bg: #121212;
+  --surface: #1E1E1E;
+  --ink: #E5E5E5;
+  --muted: #A0A0A0;
+  --border: #333333;
+}
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--ink); }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font: inherit; }
+
+/* Layout */
+header { position: fixed; top:0; left:0; right:0; background: var(--surface); padding:1rem 3rem; display:flex; align-items:center; justify-content:space-between; z-index:1000; }
+header .logo { font-size:3rem; font-weight:700; }
+nav ul { list-style:none; margin:0; padding:0; display:flex; gap:3rem; }
+nav a { font-weight:600; font-size:0.875rem; }
+nav a:focus-visible { outline:2px solid var(--accent); }
+.menu-toggle { display:none; font-size:2rem; }
+@media(max-width:767px) {
+  .menu-toggle { display:block; }
+  nav { position:absolute; top:100%; left:0; right:0; background:var(--surface); max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+  nav.open { max-height:500px; }
+  nav ul { flex-direction:column; gap:1rem; padding:1rem; }
+}
+
+/* Theme toggle */
+.theme-toggle { background:none; border:none; font-size:1.5rem; margin-left:1rem; }
+.theme-toggle:focus-visible { outline:2px solid var(--accent); }
+
+/* Hero */
+.hero { padding:12rem 3rem 8rem; text-align:center; max-width:800px; margin:auto; }
+.hero h1 { font-size:2.5rem; margin-bottom:0.5rem; }
+.hero p { font-size:1rem; color:var(--muted); margin-bottom:2rem; }
+.hero button { background:var(--accent); color:var(--accent-text); border:none; padding:1rem 2rem; font-size:0.875rem; font-weight:600; width:200px; }
+@media(max-width:767px) {
+  .hero { padding:8rem 1.5rem 6rem; }
+  .hero h1 { font-size:1.75rem; }
+  .hero button { width:100%; }
+}
+@media(max-width:374px) {
+  .hero h1 { font-size:1.5rem; }
+}
+
+/* Features */
+.features { display:grid; grid-template-columns:repeat(3, 1fr); gap:3rem; padding:3rem; max-width:1200px; margin:auto; }
+.card { background:var(--surface); padding:2rem; border-radius:0.5rem; border:1px solid var(--border); }
+.card h3 { margin-top:0; }
+@media(max-width:1024px) {
+  .features { grid-template-columns:repeat(2, 1fr); }
+}
+@media(max-width:767px) {
+  .features { grid-template-columns:1fr; }
+  .features { gap:1rem; }
+}
+
+/* Pricing */
+.pricing { display:flex; flex-wrap:wrap; gap:3rem; padding:3rem; justify-content:center; }
+.tier { background:var(--surface); padding:2rem; border-radius:0.5rem; border:2px solid var(--border); flex:1 1 300px; max-width:400px; position:relative; }
+.tier.recommended { border-color:var(--accent); }
+.tier.recommended::before { content:"Recommended"; background:var(--accent); color:var(--accent-text); padding:0.25rem 0.5rem; position:absolute; top:-1rem; left:50%; transform:translateX(-50%); font-size:0.75rem; border-radius:0.25rem; }
+.tier h2 { margin-top:0; }
+.tier ul { list-style:none; padding:0; }
+.tier ul li { margin-bottom:0.5rem; }
+.tier button { width:100%; background:var(--accent); color:var(--accent-text); border:none; padding:0.75rem; margin-top:1rem; font-weight:600; }
+@media(max-width:767px) {
+  .pricing { flex-direction:column; align-items:center; }
+}
+@media(max-width:374px) {
+  .pricing { gap:1rem; }
+}
+
+/* FAQ */
+.faq { max-width:800px; margin:auto; padding:3rem 3rem 1rem; }
+.faq button { width:100%; text-align:left; background:none; border:none; font-weight:600; padding:1rem; font-size:1rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.faq button:focus-visible { outline:2px solid var(--accent); }
+.faq button[aria-expanded="true"] { border-bottom:none; }
+.faq .panel { height:0; overflow:hidden; transition:height 0.3s ease; background:var(--surface); padding:0 1rem; }
+.faq .panel p { margin:1rem 0; }
+@media(max-width:374px) {
+  .faq { padding:1rem; }
+}
+
+/* Footer */
+footer { background:var(--surface); padding:3rem; text-align:center; font-size:0.875rem; color:var(--muted); }
+footer a { margin:0 0.5rem; color:var(--ink); }
+footer a:focus-visible { outline:2px solid var(--accent); }
+@media(max-width:767px) {
+  footer { padding:2rem; }
+}
+@media(max-width:374px) {
+  footer { padding:1rem; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Driftnote</div>
+  <button class="menu-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="main-nav" id="navToggle">☰</button>
+  <nav id="main-nav" aria-label="Main navigation">
+    <ul>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+  <button class="theme-toggle" aria-label="Toggle dark mode" id="themeToggle">🌓</button>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Write, Organize, Float</h1>
+    <p>Local‑first note‑taking that keeps your thoughts on paper, not in the cloud.</p>
+    <button>Get Started</button>
+  </section>
+
+  <section id="features" class="features">
+    <article class="card">
+      <h3>Offline First</h3>
+      <p>All notes are stored locally, no sync required.</p>
+    </article>
+    <article class="card">
+      <h3>Simple Markdown</h3>
+      <p>Quick formatting with clean, readable text.</p>
+    </article>
+    <article class="card">
+      <h3>Secure Sync</h3>
+      <p>Optional encrypted sync across devices.</p>
+    </article>
+  </section>
+
+  <section id="pricing" class="pricing">
+    <article class="tier">
+      <h2>Free</h2>
+      <ul>
+        <li>Unlimited notes</li>
+        <li>Basic formatting</li>
+        <li>No ads</li>
+      </ul>
+      <button>Start Free</button>
+    </article>
+    <article class="tier recommended">
+      <h2>Pro</h2>
+      <ul>
+        <li>All Free features</li>
+        <li>Encrypted sync</li>
+        <li>Priority support</li>
+      </ul>
+      <button>Try Pro</button>
+    </article>
+  </section>
+
+  <section id="faq" class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <button aria-expanded="false" aria-controls="panel1" id="btn1">What is local‑first?</button>
+    <div id="panel1" class="panel" role="region" aria-labelledby="btn1">
+      <p>Local‑first means all data is stored on your device by default, giving you full control.</p>
+    </div>
+    <button aria-expanded="false" aria-controls="panel2" id="btn2">How does sync work?</button>
+    <div id="panel2" class="panel" role="region" aria-labelledby="btn2">
+      <p>Sync is optional and uses end‑to‑end encryption; you choose when to sync.</p>
+    </div>
+    <button aria-expanded="false" aria-controls="panel3" id="btn3">Is there a mobile app?</button>
+    <div id="panel3" class="panel" role="region" aria-labelledby="btn3">
+      <p>Currently we support web only; mobile apps are planned for Q3 2026.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a href="#privacy">Privacy</a>
+  <a href="#terms">Terms</a>
+  <span>© 2026 Driftnote, Inc.</span>
+</footer>
+
+<script>
+/* Theme toggle */
+const themeToggle = document.getElementById('themeToggle');
+const root = document.documentElement;
+const stored = localStorage.getItem('theme');
+if (stored) root.setAttribute('data-theme', stored);
+themeToggle.addEventListener('click', () => {
+  let theme = root.getAttribute('data-theme');
+  if (!theme || theme === 'light') { theme = 'dark'; } else { theme = 'light'; }
+  root.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Toggle light mode' : 'Toggle dark mode');
+});
+
+/* Mobile nav toggle */
+const navToggle = document.getElementById('navToggle');
+const mainNav = document.getElementById('main-nav');
+navToggle.addEventListener('click', () => {
+  const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+  navToggle.setAttribute('aria-expanded', String(!expanded));
+  navToggle.setAttribute('aria-label', !expanded ? 'Close navigation menu' : 'Open navigation menu');
+  mainNav.classList.toggle('open', !expanded);
+});
+
+/* Accordion logic */
+const faq = document.querySelector('.faq');
+faq.addEventListener('click', e => {
+  if (!e.target.matches('button')) return;
+  const btn = e.target;
+  const panel = document.getElementById(btn.getAttribute('aria-controls'));
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  // Collapse any open panel
+  faq.querySelectorAll('button[aria-expanded="true"]').forEach(b => {
+    b.setAttribute('aria-expanded', 'false');
+    document.getElementById(b.getAttribute('aria-controls')).style.height = 0;
+  });
+  if (!expanded) {
+    btn.setAttribute('aria-expanded', 'true');
+    panel.style.height = panel.scrollHeight + 'px';
+  }
+});
+</script>
+</body>
+</html>

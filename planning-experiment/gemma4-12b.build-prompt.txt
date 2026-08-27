@@ -1,0 +1,90 @@
+Implement the following design plan as a single self-contained HTML file (inline CSS and JS only, no external dependencies, CDNs, or web fonts). Follow the plan's palette, typography, layout, and accessibility decisions exactly.
+
+DESIGN PLAN:
+
+### 1. COLOR PALETTE
+
+*   **Background:** #F9FAFB (Light Mode) / #0F172A (Dark Mode) — Provides a clean, neutral foundation that allows the content to stand out.
+*   **Surface:** #FFFFFF (Light) / #1E293B (Dark) — Used for cards and sections to create depth against the background.
+*   **Ink/Text:** #111827 (Light) / #F8FAFC (Dark) — High-contrast colors ensuring maximum readability for all primary content.
+*   **Muted Text:** #6B7280 (Light) / #94A3B8 (Dark) — Used for subheadlines and "de-emphasized" elements like captions.
+*   **Border:** #E5E7EB (Light) / #334155 (Dark) — Subtle separators that define boundaries without being distracting.
+*   **Accent:** #6366F1 (Indigo) — A professional, "tech-forward" primary color for CTA buttons and active states.
+*   **Accent-Text:** #FFFFFF (White) — Ensures high contrast and legibility when used inside buttons or active components.
+
+### 2. TYPOGRAPHY
+
+*   **Font Stack:**
+    *   **Display:** System-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif. (Clean, high-impact system fonts for speed and reliability).
+    *   **Body:** "Inter" style system stack (Segoe UI, Helvetica, Arial, sans-serif). (Highly legible for long-form content like FAQs).
+*   **Heading Scale:**
+    *   H1 (Hero): 48px / 1.2 line-height
+    *   H2 (Sections): 36px / 1.3 line-height
+    *   H3 (Cards/FAQ): 20px / 1.4 line-height
+*   **Body Scale:**
+    *   Standard: 16px / 1.6 line-height
+    *   Small (Muted/Nav): 14px / 1.5 line-height
+
+### 3. LAYOUT
+
+*   **Header:**
+    *   1440px: Logo left, Nav links center, Toggle/CTA right.
+    *   768px: Logo left, Nav links center, Toggle/CTA right (Shrunken).
+    *   375px: Logo left, Toggle/CTA right (Nav items hidden in a slide-out or dropdown menu).
+*   **Hero:**
+    *   1440px: Split layout (Text left, Illustration/Graphic right).
+    *   768px: Stacked (Text above graphic, centered).
+    *   375px: Stacked, centered, with reduced headline size.
+*   **Features:**
+    *   1440px: 3-column grid.
+    *   768px: 3-column grid (if space allows) or 2-over-1.
+    *   375px: Single-column stack with padding.
+*   **Pricing:**
+    *   1440px: Two horizontal cards (Free vs. Pro) side-by-side.
+    *   768px: Two columns (flexible width).
+    *   375px: Stacked vertically, Pro card with high-contrast border/badge.
+*   **FAQ:**
+    *   1440px: Single column, wide width.
+    *   768px: Single column, max-width 800px.
+    *   375px: Single column, condensed padding.
+*   **Footer:**
+    *   1440px: Multi-column links (Legal, Social, Product).
+    *   768px: Two-column grid.
+    *   375px: Stacked links, centered.
+
+### 4. ACCORDION BEHAVIOR
+
+*   **Trigger:** Clicking a header or button within the FAQ item.
+*   **Animation:** Smooth CSS transition on `max-height` and `opacity`.
+*   **Single-Open Logic:**
+    1.  User clicks a specific FAQ item.
+    2.  A script identifies the clicked item's ID or index.
+    3.  The script loops through all other accordion items and sets their "active" state to false/hidden.
+    4.  The clicked item is toggled to "active" (open).
+    5.  If the same item is clicked again while open, it closes.
+
+### 5. ACCESSIBILITY CHECKLIST
+
+*   **ARIA Attributes:**
+    *   **Menu Toggle:** `aria-expanded="false/true"`, `aria-controls="mobile-nav-id"`, `aria-label="Toggle navigation"`.
+    *   **Accordion:** Each header button needs `aria-expanded="false/true"`, `aria-controls="content-id"`, and a unique `id` for the content container.
+*   **Keyboard Navigation:**
+    *   **Focus States:** Visible high-contrast outlines for all interactive elements (Buttons, Links, Accordion headers).
+    *   **Menu:** Users can tab through links; "Escape" key closes the mobile menu.
+    *   **Accordion:** Users can tab to each header; pressing "Enter" or "Space" toggles the content.
+*   **Color Contrast:** All text elements must maintain a minimum 4.5:1 ratio against their backgrounds in both light and dark modes.
+
+ORIGINAL SPECIFICATION (for reference):
+
+Build a landing page for a fictional local-first note-taking app called "Driftnote". Requirements:
+
+- Sticky header with a logo/wordmark and nav links that collapses into a hamburger menu below 768px width
+- Hero section: headline, subheadline, call-to-action button
+- A 3-column features section
+- A pricing section with two tiers (Free / Pro), one visually marked as "recommended"
+- An FAQ section using a JS-driven accordion (click to expand/collapse, only one open at a time)
+- Must look correct and uncluttered at 375px, 768px, and 1440px widths
+- Support both light and dark mode via prefers-color-scheme, plus a manual toggle button that overrides it
+- Semantic HTML5 elements, keyboard-operable interactive elements, appropriate aria- attributes
+
+Output only the complete HTML file in a single ```html code block. No explanation before or after.

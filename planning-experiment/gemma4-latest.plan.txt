@@ -1,0 +1,63 @@
+# Design Plan: Driftnote Landing Page
+
+## 1. COLOR PALETTE
+
+*   **Background:** `#FFFFFF` (Light mode default background, providing a clean, neutral canvas.)
+*   **Surface:** `#F5F5F5` (Used for card backgrounds like features or pricing tiers to create subtle separation from the main background.)
+*   **Ink/Text:** `#1A1A1A` (Deep charcoal for primary text to ensure excellent contrast and readability in both modes.)
+*   **Muted Text:** `#777777` (A medium gray used for secondary information, such as subheadlines or placeholder text, to de-emphasize without losing readability.)
+*   **Border:** `#E0E0E0` (A light, subtle border color used to contain elements like input fields or card divisions, keeping the design airy.)
+*   **Accent:** `#4A90E2` (A trustworthy, vibrant blue used for primary CTAs and active states, suggesting reliability.)
+*   **Accent-Text:** `#1E60C4` (A slightly darker shade of the accent blue, used specifically for emphasis within copy or links.)
+
+## 2. TYPOGRAPHY
+
+*   **Display Font Stack:** System-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif (Chosen for modern system rendering that scales well across devices.)
+*   **Body Font Stack:** System-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif (Keeping consistency with the display font for optimal readability.)
+*   **Heading Scale:**
+    *   H1: 3.5rem (Large, impactful headline size for immediate attention.)
+    *   H2: 2.5rem (Strong section titles.)
+    *   H3: 1.75rem (Sub-section headings or feature titles.)
+    *   Body: 1rem (Standard, readable paragraph size.)
+
+## 3. LAYOUT
+
+*   **Header (Sticky):**
+    *   **1440px:** Logo (left-aligned) | Nav Links (center/right) | CTA Button (far right).
+    *   **768px:** Logo (left-aligned) | Hamburger Icon (right-aligned, replacing full nav).
+    *   **375px:** Logo (left-aligned) | Hamburger Icon (right-aligned).
+*   **Hero Section:**
+    *   **1440px:** Centered content block. Headline stacked over subheadline, followed by a wide CTA button, all with ample vertical breathing room.
+    *   **768px:** Centered content block. Content is slightly more condensed vertically to fit screen real estate efficiently.
+    *   **375px:** Vertically stacked content block, ensuring the headline wraps naturally and the CTA remains prominent and full-width.
+*   **Features Section:**
+    *   **1440px:** A clear 3-column grid layout, evenly spaced, with distinct content cards (surface background).
+    *   **768px:** A 2-column layout, wrapping the third column beneath the first two, maintaining visual grouping.
+    *   **375px:** A single-column stack. Each feature card occupies the full width available.
+*   **Pricing Section:**
+    *   **1440px:** Two adjacent columns (Free | Pro). The 'Pro' column is visually emphasized (e.g., border/background variation).
+    *   **768px:** Two stacked columns, or side-by-side if space permits, ensuring the visual "Recommended" flag is highly visible.
+    *   **375px:** Single-column stack. The two pricing cards stack vertically.
+*   **FAQ Section:**
+    *   **1440px:** A full-width container utilizing a single, clean vertical stack of accordion items.
+    *   **768px:** Single vertical stack, maintaining clean horizontal spacing between items.
+    *   **375px:** Single vertical stack, optimizing text length within each item wrapper.
+*   **Footer:**
+    *   **1440px:** 3-column structure (e.g., Links, Legal, Socials).
+    *   **768px:** 2-column structure, stacking the footer groups vertically if necessary.
+    *   **375px:** Single-column stack, listing all links/groups vertically.
+
+## 4. ACCORDION BEHAVIOR
+
+*   **Interaction Logic:** On click of a question (the trigger element), the corresponding answer panel must smoothly transition to the expanded state (displaying content).
+*   **Single Open State Enforcement:** If an answer panel is already open, clicking a *different* question must first programmatically trigger the collapse/closing of the currently open panel before expanding the newly clicked panel. This ensures only one answer panel is visible at any time.
+
+## 5. ACCESSIBILITY CHECKLIST
+
+*   **ARIA Attributes Required:**
+    *   **Navigation Menu Toggle:** The hamburger icon/button requires `aria-controls` (pointing to the navigation menu ID) and `aria-expanded` (toggled between "false" and "true" based on state).
+    *   **Accordion Items (Question Headers):** Each question header element requires `aria-expanded` (toggled between "false" and "true") and `aria-controls` (pointing to the specific ID of its answer panel).
+    *   **Accordion Items (Answer Panels):** The answer panel container requires an `id` that matches the `aria-controls` value from its corresponding question header.
+*   **Keyboard Operability:**
+    *   **Menu Toggle:** Must be fully operable using the `Enter` or `Space` key.
+    *   **Accordion:** Users must be able to navigate between questions using the `Tab` key, and activating the expand/collapse functionality must work via `Enter` or `Space` on the question header element.

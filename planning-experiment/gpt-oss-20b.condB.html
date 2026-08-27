@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Driftnote | Local-first note-taking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Basic reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+body, h1, h2, h3, p, ul, li, button, a {
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+a:hover, a:focus {
+  text-decoration: underline;
+}
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Variables */
+:root {
+  --color-bg: #fff;
+  --color-bg-alt: #f9f9f9;
+  --color-text: #111;
+  --color-primary: #4a90e2;
+  --color-primary-light: #5a9ff2;
+  --color-primary-dark: #3a78c2;
+  --color-accent: #f5a623;
+  --color-accent-light: #f6b844;
+  --color-accent-dark: #d48d19;
+  --color-border: #ddd;
+  --radius: 4px;
+  --spacing: 1rem;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #111;
+    --color-bg-alt: #1e1e1e;
+    --color-text: #eee;
+    --color-border: #333;
+  }
+}
+
+/* Manual override */
+[data-theme="dark"] {
+  --color-bg: #111;
+  --color-bg-alt: #1e1e1e;
+  --color-text: #eee;
+  --color-border: #333;
+}
+[data-theme="light"] {
+  --color-bg: #fff;
+  --color-bg-alt: #f9f9f9;
+  --color-text: #111;
+  --color-border: #ddd;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing);
+}
+
+/* Header */
+header {
+  position: sticky;
+  top: 0;
+  background: var(--color-bg);
+  z-index: 1000;
+  border-bottom: 1px solid var(--color-border);
+}
+header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing) 0;
+}
+.logo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: var(--spacing);
+}
+nav a {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+}
+nav a:hover, nav a:focus {
+  background: var(--color-primary-light);
+  color: #fff;
+}
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  margin-left: 1rem;
+}
+
+/* Sticky header nav on small screens */
+@media (max-width: 767px) {
+  nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-bg);
+    display: none;
+    border-bottom: 1px solid var(--color-border);
+    z-index: 999;
+  }
+  nav.open {
+    display: block;
+  }
+  nav ul {
+    flex-direction: column;
+    gap: 0;
+  }
+  nav li {
+    border-bottom: 1px solid var(--color-border);
+  }
+  nav a {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+  }
+  .nav-toggle {
+    display: block;
+  }
+}
+
+/* Hero */
+.hero {
+  background: var(--color-primary);
+  color: #fff;
+  text-align: center;
+  padding: 4rem 0;
+}
+.hero .container {
+  max-width: 800px;
+}
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.cta {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: #fff;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+.cta:hover, .cta:focus {
+  background: var(--color-accent-light);
+}
+
+/* Features */
+.features {
+  padding: 3rem 0;
+}
+.features h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+.feature h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+@media (min-width: 768px) {
+  .feature-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Pricing */
+.pricing {
+  background: var(--color-bg-alt);
+  padding: 3rem 0;
+}
+.pricing h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+.pricing-card {
+  background: var(--color-bg);
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  position: relative;
+}
+.pricing-card h3 {
+  margin-bottom: 0.5rem;
+}
+.price {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.price span {
+  font-size: 1rem;
+  font-weight: 400;
+}
+.features-list {
+  list-style: none;
+  margin-bottom: 1rem;
+}
+.features-list li {
+  margin-bottom: 0.5rem;
+}
+.recommended .badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--color-accent);
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+}
+.recommended {
+  border-color: var(--color-accent);
+}
+@media (min-width: 768px) {
+  .pricing-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* FAQ */
+.faq {
+  padding: 3rem 0;
+}
+.faq h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.accordion-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+}
+.accordion-header {
+  width: 100%;
+  background: var(--color-bg);
+  border: none;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.accordion-header:hover, .accordion-header:focus {
+  background: var(--color-primary-light);
+  color: #fff;
+}
+.accordion-content {
+  padding: 0 1rem;
+  display: none;
+}
+.accordion-content.show {
+  display: block;
+  padding-top: 1rem;
+}
+.accordion-header .icon {
+  transition: transform 0.3s ease;
+}
+.accordion-header[aria-expanded="true"] .icon {
+  transform: rotate(45deg);
+}
+
+/* Footer */
+footer {
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+  padding: 1rem 0;
+}
+footer p {
+  margin: 0;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .hero h1 {
+    font-size: 3.5rem;
+  }
+  .hero p {
+    font-size: 1.5rem;
+  }
+}
+@media (min-width: 1440px) {
+  .hero h1 {
+    font-size: 4rem;
+  }
+  .hero p {
+    font-size: 1.75rem;
+  }
+}
+
+/* Outline focus styles */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <a href="#" class="logo">Driftnote</a>
+    <nav id="primary-nav" role="navigation" aria-label="Main Navigation">
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark mode">🌙</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="hero">
+    <div class="container">
+      <h1>Take notes, your way.</h1>
+      <p>Driftnote is a local-first note-taking app that keeps your data offline and secure.</p>
+      <a href="#download" class="cta">Get Started</a>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <h2>Features</h2>
+      <div class="feature-grid">
+        <article class="feature">
+          <h3>Offline First</h3>
+          <p>All notes are stored locally in your browser, ensuring they are always available.</p>
+        </article>
+        <article class="feature">
+          <h3>Markdown Support</h3>
+          <p>Write notes with Markdown and preview instantly.</p>
+        </article>
+        <article class="feature">
+          <h3>Sync on Demand</h3>
+          <p>When you're online, sync your notes across devices manually.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <h2>Pricing</h2>
+      <div class="pricing-grid">
+        <article class="pricing-card free">
+          <h3>Free</h3>
+          <p class="price">$0<span>/month</span></p>
+          <ul class="features-list">
+            <li>Unlimited notes</li>
+            <li>Markdown support</li>
+            <li>No ads</li>
+          </ul>
+          <a href="#signup" class="cta">Choose Free</a>
+        </article>
+        <article class="pricing-card pro recommended">
+          <span class="badge">Recommended</span>
+          <h3>Pro</h3>
+          <p class="price">$5<span>/month</span></p>
+          <ul class="features-list">
+            <li>All Free features</li>
+            <li>Sync to device backup</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#signup" class="cta">Upgrade to Pro</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <div class="container">
+      <h2>Frequently Asked Questions</h2>
+      <div class="accordion">
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false" aria-controls="faq1" id="faq1-header">What data does Driftnote store locally?<span class="icon">+</span></button>
+          <div id="faq1" class="accordion-content" role="region" aria-labelledby="faq1-header">
+            <p>All notes, metadata, and settings are stored in the browser's local storage.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false" aria-controls="faq2" id="faq2-header">Can I sync notes across devices?<span class="icon">+</span></button>
+          <div id="faq2" class="accordion-content" role="region" aria-labelledby="faq2-header">
+            <p>Yes, you can sync via the manual sync feature using a secure token.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false" aria-controls="faq3" id="faq3-header">Is the app free forever?<span class="icon">+</span></button>
+          <div id="faq3" class="accordion-content" role="region" aria-labelledby="faq3-header">
+            <p>Yes, the core app remains free. Pro offers additional sync and support.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2026 Driftnote. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const html = document.documentElement;
+  const themeToggle = document.getElementById('theme-toggle');
+  const navToggle = document.querySelector('.nav-toggle');
+  const nav = document.getElementById('primary-nav');
+
+  const setTheme = (theme) => {
+    if (theme === 'auto') {
+      html.removeAttribute('data-theme');
+    } else {
+      html.setAttribute('data-theme', theme);
+    }
+    if (theme === 'dark') {
+      themeToggle.textContent = '🌞';
+      themeToggle.setAttribute('aria-label', 'Switch to light mode');
+    } else {
+      themeToggle.textContent = '🌙';
+      themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+    }
+  };
+
+  const initTheme = () => {
+    const stored = localStorage.getItem('theme');
+    if (stored) {
+      setTheme(stored);
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
+    }
+  };
+
+  themeToggle.addEventListener('click', () => {
+    const current = html.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const newTheme = current === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+
+  const toggleNav = () => {
+    const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+    navToggle.setAttribute('aria-expanded', String(!expanded));
+    navToggle.setAttribute('aria-label', !expanded ? 'Open menu' : 'Close menu');
+    nav.classList.toggle('open', !expanded);
+  };
+
+  navToggle.addEventListener('click', toggleNav);
+  navToggle.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleNav();
+    }
+  });
+
+  const accordionItems = document.querySelectorAll('.accordion-item');
+  accordionItems.forEach(item => {
+    const header = item.querySelector('.accordion-header');
+    const content = item.querySelector('.accordion-content');
+    header.addEventListener('click', () => {
+      const expanded = header.getAttribute('aria-expanded') === 'true';
+      if (expanded) {
+        header.setAttribute('aria-expanded', 'false');
+        content.classList.remove('show');
+      } else {
+        accordionItems.forEach(other => {
+          const otherHeader = other.querySelector('.accordion-header');
+          const otherContent = other.querySelector('.accordion-content');
+          if (otherHeader !== header) {
+            otherHeader.setAttribute('aria-expanded', 'false');
+            otherContent.classList.remove('show');
+          }
+        });
+        header.setAttribute('aria-expanded', 'true');
+        content.classList.add('show');
+      }
+    });
+    header.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        header.click();
+      }
+    });
+  });
+
+  initTheme();
+})();
+</script>
+</body>
+</html>

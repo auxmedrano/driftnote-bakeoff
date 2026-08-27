@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Driftnote is a local-first note-taking app. Your words live on your device — searchable, synced, and yours.">
+<title>Driftnote — Notes that stay put</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232F6B5E'/%3E%3Cpath d='M9 11h14M9 16h9M9 21h12' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>
+(function(){
+  var d=document, k='driftnote-theme', m=d.documentElement, t;
+  try{ t=localStorage.getItem(k); }catch(e){}
+  if(t){ m.setAttribute('data-theme',t); }
+  else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){ m.setAttribute('data-theme','dark'); }
+})();
+</script>
+<style>
+  :root{
+    --bg:#F7F5F0; --surface:#FFFFFF; --ink:#1A1A1D; --muted:#5C5C66;
+    --border:#E4E0D6; --accent:#2F6B5E; --accent-text:#FFFFFF;
+    --on-accent:#FFFFFF; --shadow:rgba(26,26,29,.10); --code-bg:#F0EDE4;
+  }
+  [data-theme="dark"]{
+    --bg:#0F1117; --surface:#171A23; --ink:#F2F2F5; --muted:#9BA0AE;
+    --border:#2A2E3A; --accent:#4FC3A5; --accent-text:#0F1117;
+    --on-accent:#0F1117; --shadow:rgba(0,0,0,.55); --code-bg:#20242f;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    font-size:16px; line-height:1.6; font-weight:400;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  [data-theme="dark"] body{ color-scheme:dark; }
+  img,svg{ display:block; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+
+  .container{ max-width:1140px; margin:0 auto; padding:0 clamp(1.25rem,4vw,2rem); }
+
+  .eyebrow{
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin:0 0 1rem;
+  }
+  .eyebrow-center{ text-align:center; }
+  .section-head{ max-width:720px; margin:0 auto clamp(2rem,5vw,3.25rem); }
+  .section-head h2{ font-size:clamp(1.75rem,4vw,2.25rem); font-weight:700; letter-spacing:-.02em; line-height:1.12; margin:0 0 .6rem; }
+  .section-head p{ color:var(--muted); font-size:1.06rem; margin:0; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+    font-size:1rem; font-weight:600; line-height:1; padding:.85rem 1.4rem;
+    border-radius:10px; border:1px solid transparent; cursor:pointer;
+    transition:transform .15s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .btn-primary{ background:var(--accent); color:var(--on-accent); }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 10px 22px var(--shadow); }
+  .btn-primary:active{ transform:translateY(0); }
+  .btn-ghost{ background:transparent; color:var(--ink); border-color:var(--border); }
+  .btn-ghost:hover{ background:var(--surface); border-color:var(--muted); }
+  .btn-sm{ padding:.6rem 1rem; font-size:.92rem; }
+
+  /* ---------- Header ---------- */
+  .site-header{ position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:1px solid transparent; transition:border-color .3s ease; }
+  .site-header.scrolled{ border-bottom-color:var(--border); }
+  .header-inner{ display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:66px; }
+  .brand{ display:inline-flex; align-items:center; gap:.6rem; font-weight:700; letter-spacing:-.02em; font-size:1.18rem; }
+  .brand-mark{ width:32px; height:32px; flex:0 0 auto; }
+  .nav-actions{ display:flex; align-items:center; gap:.5rem; }
+  .nav-links{ display:flex; align-items:center; gap:1.6rem; }
+  .nav-links a{ font-size:.98rem; font-weight:500; color:var(--muted); padding:.35rem 0; position:relative; transition:color .2s ease; }
+  .nav-links a::after{ content:""; position:absolute; left:0; right:100%; bottom:-2px; height:2px; background:var(--accent); transition:right .25s ease; }
+  .nav-links a:hover{ color:var(--ink); }
+  .nav-links a:hover::after{ right:0; }
+  .icon-btn{ display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:9px; border:1px solid var(--border); background:var(--surface); color:var(--ink); cursor:pointer; transition:transform .15s ease, border-color .2s ease; }
+  .icon-btn:hover{ border-color:var(--muted); }
+  .icon-btn:active{ transform:scale(.94); }
+  .icon-btn svg{ width:20px; height:20px; }
+  .nav-toggle{ display:none; }
+  .nav-panel{ display:none; }
+  [data-theme="dark"] .icon-sun{ display:none; }
+  [data-theme="light"] .icon-moon{ display:none; }
+
+  @media (max-width:768px){
+    .nav-links, .nav-cta{ display:none; }
+    .nav-toggle{ display:inline-flex; }
+    .nav-panel{
+      display:block; position:absolute; top:100%; left:0; right:0;
+      background:var(--bg); border-bottom:1px solid var(--border);
+      padding:1rem clamp(1.25rem,4vw,2rem) 1.4rem;
+      box-shadow:0 18px 30px var(--shadow);
+      transform:translateY(-8px); opacity:0; visibility:hidden;
+      transition:transform .25s ease, opacity .25s ease, visibility .25s;
+    }
+    .nav-panel.open{ transform:translateY(0); opacity:1; visibility:visible; }
+    .nav-panel ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+    .nav-panel a{ display:block; padding:.7rem .25rem; font-weight:500; font-size:1.02rem; color:var(--ink); }
+    .nav-panel a:hover{ color:var(--accent); }
+    .nav-panel .btn{ margin-top:.75rem; width:100%; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{ padding:clamp(3rem,8vw,5.5rem) 0 clamp(2.5rem,6vw,4rem); }
+  .hero-inner{ max-width:760px; margin:0 auto; text-align:center; }
+  .hero h1{ font-size:clamp(2rem,6vw,3rem); font-weight:700; letter-spacing:-.025em; line-height:1.08; margin:0 0 1.1rem; }
+  .hero .sub{ font-size:clamp(1.05rem,2.6vw,1.25rem); color:var(--muted); margin:0 auto 2rem; max-width:600px; }
+  .hero .cta-row{ display:flex; gap:.75rem; justify-content:center; flex-wrap:wrap; }
+  .hero .btn-primary{ min-width:220px; }
+  .hero-note{ margin-top:1rem; font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.78rem; letter-spacing:.04em; color:var(--muted); }
+  @media (max-width:480px){ .hero .cta-row .btn{ width:100%; } }
+
+  .app{ position:relative; max-width:680px; margin:clamp(2.5rem,6vw,3.75rem) auto 0; background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 30px 60px -30px var(--shadow); }
+  .app-bar{ display:flex; align-items:center; gap:.5rem; padding:.7rem 1rem; border-bottom:1px solid var(--border); }
+  .dot{ width:11px; height:11px; border-radius:50%; background:var(--border); }
+  .app-title{ margin-left:.6rem; font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.78rem; color:var(--muted); }
+  .app-body{ display:grid; grid-template-columns:150px 1fr; }
+  .app-side{ border-right:1px solid var(--border); padding:1rem .9rem; }
+  .side-label{ font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 .6rem; }
+  .side-item{ display:block; padding:.4rem .55rem; border-radius:7px; font-size:.86rem; color:var(--muted); }
+  .side-item.active{ background:var(--accent); color:var(--on-accent); font-weight:600; }
+  .app-doc{ padding:1.1rem 1.25rem; }
+  .doc-title{ font-size:1.15rem; font-weight:700; letter-spacing:-.01em; margin:0 0 .5rem; }
+  .doc-line{ height:9px; border-radius:5px; background:var(--border); margin-bottom:.6rem; }
+  .doc-line.w80{ width:80%; } .doc-line.w60{ width:60%; } .doc-line.w90{ width:90%; } .doc-line.w70{ width:70%; }
+  .app-foot{ display:flex; align-items:center; gap:.6rem; padding:.75rem 1.25rem; border-top:1px solid var(--border); color:var(--muted); font-size:.8rem; }
+  .app-foot .pulse{ width:8px; height:8px; border-radius:50%; background:var(--accent); animation:pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; transform:scale(1);} 50%{ opacity:.35; transform:scale(.7);} }
+  .tag{ position:absolute; display:inline-flex; align-items:center; gap:.45rem; font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.72rem; font-weight:600; letter-spacing:.02em; background:var(--surface); border:1px solid var(--border); color:var(--ink); padding:.45rem .7rem; border-radius:9px; box-shadow:0 12px 24px -10px var(--shadow); }
+  .tag-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); }
+  .tag-1{ top:-14px; right:-12px; animation:float 6s ease-in-out infinite; }
+  .tag-2{ bottom:-14px; left:-14px; animation:float 7s ease-in-out infinite .8s; }
+  .tag-3{ top:42%; right:-30px; animation:float 5.5s ease-in-out infinite .4s; }
+  @keyframes float{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-8px);} }
+  @media (max-width:560px){
+    .app-body{ grid-template-columns:1fr; }
+    .app-side{ border-right:0; border-bottom:1px solid var(--border); }
+    .tag{ display:none; }
+  }
+
+  /* ---------- Features ---------- */
+  .features{ padding:clamp(3rem,8vw,5.5rem) 0; }
+  .feature-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; }
+  .feature{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+  .feature:hover{ transform:translateY(-4px); border-color:var(--accent); box-shadow:0 18px 34px -22px var(--shadow); }
+  .feature-icon{ width:44px; height:44px; border-radius:11px; background:var(--code-bg); color:var(--accent); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+  .feature-icon svg{ width:22px; height:22px; }
+  .feature h3{ margin:0 0 .5rem; font-size:1.12rem; font-weight:700; letter-spacing:-.01em; }
+  .feature p{ margin:0; color:var(--muted); font-size:.96rem; }
+  @media (max-width:900px){ .feature-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:640px){ .feature-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- Pricing ---------- */
+  .pricing{ padding:clamp(3rem,8vw,5.5rem) 0; }
+  .price-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:start; }
+  .tier{ position:relative; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; }
+  .tier.recommended{ border:2px solid var(--accent); box-shadow:0 22px 44px -26px var(--shadow); }
+  .badge{ position:absolute; top:-12px; right:1.25rem; background:var(--accent); color:var(--on-accent); font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; font-weight:700; padding:.35rem .7rem; border-radius:7px; }
+  .tier-name{ font-size:1.3rem; font-weight:700; letter-spacing:-.01em; margin:0; }
+  .tier-tag{ color:var(--muted); font-size:.92rem; margin:.3rem 0 1.25rem; }
+  .price{ display:flex; align-items:baseline; gap:.35rem; margin-bottom:1.5rem; }
+  .price .amount{ font-size:2.5rem; font-weight:700; letter-spacing:-.03em; }
+  .price .per{ color:var(--muted); font-size:.95rem; }
+  .tier .btn{ width:100%; margin-bottom:1.4rem; }
+  .feat-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.7rem; }
+  .feat-list li{ display:flex; gap:.6rem; align-items:flex-start; font-size:.95rem; color:var(--ink); }
+  .feat-list svg{ width:18px; height:18px; flex:0 0 auto; margin-top:2px; color:var(--accent); }
+  @media (max-width:768px){ .price-grid{ gap:1rem; } .tier{ padding:1.4rem; } .price .amount{ font-size:2.2rem; } }
+  @media (max-width:620px){
+    .price-grid{ grid-template-columns:1fr; }
+    .tier.recommended{ order:-1; }
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq{ padding:clamp(3rem,8vw,5.5rem) 0; }
+  .faq-list{ max-width:720px; margin:0 auto; }
+  .faq-item{ border-bottom:1px solid var(--border); }
+  .faq-item:first-child{ border-top:1px solid var(--border); }
+  .faq-q{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:1rem; background:none; border:0; cursor:pointer; padding:1.15rem .25rem; font-size:1.05rem; font-weight:600; color:var(--ink); text-align:left; line-height:1.4; }
+  .faq-q:hover{ color:var(--accent); }
+  .faq-icon{ flex:0 0 auto; width:22px; height:22px; color:var(--muted); transition:transform .3s ease, color .3s ease; }
+  .faq-item.open .faq-icon{ transform:rotate(45deg); color:var(--accent); }
+  .faq-answer{ overflow:hidden; height:0; }
+  .faq-answer p{ margin:0; padding:0 .25rem 1.3rem; color:var(--muted); font-size:.98rem; line-height:1.65; }
+
+  /* ---------- Footer ---------- */
+  .site-footer{ border-top:1px solid var(--border); margin-top:clamp(2rem,6vw,4rem); padding:clamp(2.5rem,6vw,4rem) 0 2rem; }
+  .footer-grid{ display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:2rem; }
+  .footer-brand p{ color:var(--muted); font-size:.92rem; max-width:280px; margin:.8rem 0 1rem; }
+  .footer-col h4{ font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin:0 0 .8rem; font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; }
+  .footer-col ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.55rem; }
+  .footer-col a{ color:var(--muted); font-size:.94rem; transition:color .2s ease; }
+  .footer-col a:hover{ color:var(--ink); }
+  .footer-bottom{ display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border); color:var(--muted); font-size:.85rem; }
+  @media (max-width:768px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:480px){ .footer-grid{ grid-template-columns:1fr; gap:1.5rem; } }
+
+  /* ---------- Reveal ---------- */
+  .reveal{ opacity:0; transform:translateY(20px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+    .tag, .app-foot .pulse{ animation:none; }
+    .icon-btn:active, .btn:active{ transform:none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="container header-inner">
+    <a class="brand" href="#top" aria-label="Driftnote home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="var(--accent)"/>
+        <path d="M9 11h14M9 16h9M9 21h12" stroke="var(--on-accent)" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      Driftnote
+    </a>
+    <div class="nav-actions">
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="btn btn-primary btn-sm nav-cta" href="#pricing">Get started</a>
+      <button class="icon-btn theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="nav-panel" id="nav-panel">
+    <nav aria-label="Mobile">
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a class="btn btn-primary" href="#pricing">Get started</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <p class="eyebrow eyebrow-center">local-first · private by design</p>
+      <h1>Notes that stay put.</h1>
+      <p class="sub">Driftnote is a local-first writing surface. Your words live on your device — fast, searchable, and synced across your devices without a single server holding the keys.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#pricing">Start writing — free</a>
+        <a class="btn btn-ghost" href="#features">See how it works</a>
+      </div>
+      <p class="hero-note">no account · no cloud lock-in · export anytime</p>
+    </div>
+
+    <div class="app reveal">
+      <div class="app-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="app-title">driftnote — drafts/roadmap.md</span>
+      </div>
+      <div class="app-body">
+        <aside class="app-side">
+          <p class="side-label">Notes</p>
+          <span class="side-item active">Roadmap</span>
+          <span class="side-item">Reading list</span>
+          <span class="side-item">Meeting — Q3</span>
+          <span class="side-item">Ideas</span>
+        </aside>
+        <div class="app-doc">
+          <p class="doc-title">Roadmap</p>
+          <div class="doc-line w90"></div>
+          <div class="doc-line"></div>
+          <div class="doc-line w80"></div>
+          <div class="doc-line w70"></div>
+          <div class="doc-line w60"></div>
+        </div>
+      </div>
+      <div class="app-foot"><span class="pulse"></span> Synced to 3 devices · encrypted</div>
+      <span class="tag tag-1"><span class="tag-dot"></span>on-device</span>
+      <span class="tag tag-2"><span class="tag-dot"></span>no account</span>
+      <span class="tag tag-3"><span class="tag-dot"></span>markdown</span>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features" aria-labelledby="features-h">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">What it does</p>
+        <h2 id="features-h">Built to feel like paper — and work like a database.</h2>
+        <p>Six things Driftnote does differently, so your notes stay yours and stay fast.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M8 10h8M8 14h5"/></svg></span>
+          <h3>Local-first by default</h3>
+          <p>Everything is written to disk on your machine first. The app is fully usable offline — the network is just a bonus, never a dependency.</p>
+        </article>
+        <article class="feature reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+          <h3>End-to-end encrypted sync</h3>
+          <p>When you opt in to sync, changes are encrypted before they leave your device. No one — including us — can read your notes in transit or at rest.</p>
+        </article>
+        <article class="feature reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+          <h3>Instant full-text search</h3>
+          <p>Search across every note, attachment, and tag in milliseconds. Results appear as you type, ranked the way you actually write.</p>
+        </article>
+        <article class="feature reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12M6 5v14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V5M9 9h6M9 13h6M9 17h4"/></svg></span>
+          <h3>Markdown, not a black box</h3>
+          <p>Your notes are plain text you can open in any editor. Link, embed, and structure freely — the format is yours to keep forever.</p>
+        </article>
+        <article class="feature reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V9M12 9 8 13M12 9l4 4M5 20h14"/></svg></span>
+          <h3>Backups that make sense</h3>
+          <p>Scheduled local snapshots with version history. Roll back a note to any moment, or export a clean archive whenever you like.</p>
+        </article>
+        <article class="feature reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <h3>Keyboard-first</h3>
+          <p>Everything is reachable without touching the mouse. Command palette, shortcuts, and full arrow-key navigation for power writers.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing" aria-labelledby="pricing-h">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">Pricing</p>
+        <h2 id="pricing-h">Free to start. Pay only when you need more.</h2>
+        <p>Both tiers include local storage and offline use. Pro simply adds encrypted sync and unlimited history.</p>
+      </div>
+      <div class="price-grid">
+        <article class="tier reveal">
+          <h3 class="tier-name">Free</h3>
+          <p class="tier-tag">For people who want a home for their notes.</p>
+          <div class="price"><span class="amount">$0</span><span class="per">forever</span></div>
+          <a class="btn btn-ghost" href="#">Start for free</a>
+          <ul class="feat-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Unlimited local notes</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Full-text search &amp; tags</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Markdown &amp; plain-text export</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>30-day version history</li>
+          </ul>
+        </article>
+        <article class="tier recommended reveal">
+          <span class="badge">Recommended</span>
+          <h3 class="tier-name">Pro</h3>
+          <p class="tier-tag">For people who write across several devices.</p>
+          <div class="price"><span class="amount">$8</span><span class="per">/ month</span></div>
+          <a class="btn btn-primary" href="#">Get Pro</a>
+          <ul class="feat-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Everything in Free</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>End-to-end encrypted sync</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Unlimited devices</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Unlimited version history</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Priority support</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq" aria-labelledby="faq-h">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">FAQ</p>
+        <h2 id="faq-h">Questions, answered.</h2>
+        <p>The things people ask most about local-first notes.</p>
+      </div>
+      <div class="faq-list reveal">
+        <div class="faq-item">
+          <h3 style="margin:0"><button class="faq-q" id="q1" aria-expanded="false" aria-controls="a1">
+            Where is my data actually stored?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button></h3>
+          <div class="faq-answer" id="a1" role="region" aria-labelledby="q1"><p>On your device, first. Notes are written to a local database on your machine and can be exported as plain Markdown at any time. If you enable sync, encrypted copies are sent to your devices — never to a readable central store.</p></div>
+        </div>
+        <div class="faq-item">
+          <h3 style="margin:0"><button class="faq-q" id="q2" aria-expanded="false" aria-controls="a2">
+            Do I need an account to use it?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button></h3>
+          <div class="faq-answer" id="a2" role="region" aria-labelledby="q2"><p>No. The Free tier works completely offline with no sign-up. You only create a lightweight account if you choose to turn on encrypted sync between devices.</p></div>
+        </div>
+        <div class="faq-item">
+          <h3 style="margin:0"><button class="faq-q" id="q3" aria-expanded="false" aria-controls="a3">
+            How does sync work between devices?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button></h3>
+          <div class="faq-answer" id="a3" role="region" aria-labelledby="q3"><p>Driftnote uses a local-first, CRDT-based sync engine. Edits happen instantly on your device, and changes merge without conflicts when your devices reconnect. Everything is encrypted end-to-end before it leaves your machine.</p></div>
+        </div>
+        <div class="faq-item">
+          <h3 style="margin:0"><button class="faq-q" id="q4" aria-expanded="false" aria-controls="a4">
+            Can I import from other note apps?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button></h3>
+          <div class="faq-answer" id="a4" role="region" aria-labelledby="q4"><p>Yes. Driftnote imports Markdown, HTML, and plain text in one click, and keeps your folder structure, links, and tags intact. Most people move their entire library in under a minute.</p></div>
+        </div>
+        <div class="faq-item">
+          <h3 style="margin:0"><button class="faq-q" id="q5" aria-expanded="false" aria-controls="a5">
+            What happens if I cancel Pro?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button></h3>
+          <div class="faq-answer" id="a5" role="region" aria-labelledby="q5"><p>You keep everything. Your notes stay on your devices and you can keep using the app locally forever. Only encrypted sync and unlimited history pause until you resubscribe — nothing is deleted or held hostage.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#top" aria-label="Driftnote home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="var(--accent)"/>
+            <path d="M9 11h14M9 16h9M9 21h12" stroke="var(--on-accent)" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+          Driftnote
+        </a>
+        <p>A local-first note-taking app. Your words, your device, your rules.</p>
+        <span class="hero-note" style="margin:0">made for people who write</span>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">Download</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#faq">Help center</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Driftnote. All rights reserved.</span>
+      <span class="hero-note" style="margin:0">local-first · encrypted · yours</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root = document.documentElement;
+
+  /* ---------- Theme toggle ---------- */
+  var themeBtn = document.querySelector('.theme-toggle');
+  function setTheme(t){
+    root.setAttribute('data-theme', t);
+    try{ localStorage.setItem('driftnote-theme', t); }catch(e){}
+    var toDark = t === 'light';
+    themeBtn.setAttribute('aria-pressed', String(t === 'dark'));
+    themeBtn.setAttribute('aria-label', toDark ? 'Switch to dark mode' : 'Switch to light mode');
+  }
+  themeBtn.setAttribute('aria-pressed', String(root.getAttribute('data-theme') === 'dark'));
+  themeBtn.setAttribute('aria-label', root.getAttribute('data-theme') === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+  themeBtn.addEventListener('click', function(){
+    setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  /* ---------- Mobile menu ---------- */
+  var navToggle = document.querySelector('.nav-toggle');
+  var navPanel = document.getElementById('nav-panel');
+  function closeMenu(refocus){
+    if(navPanel.classList.contains('open')){
+      navPanel.classList.remove('open');
+      navToggle.setAttribute('aria-expanded','false');
+      navToggle.setAttribute('aria-label','Open menu');
+      if(refocus) navToggle.focus();
+    }
+  }
+  function openMenu(){
+    navPanel.classList.add('open');
+    navToggle.setAttribute('aria-expanded','true');
+    navToggle.setAttribute('aria-label','Close menu');
+  }
+  navToggle.addEventListener('click', function(){
+    navPanel.classList.contains('open') ? closeMenu(false) : openMenu();
+  });
+  navPanel.addEventListener('click', function(e){
+    if(e.target.closest('a')) closeMenu(false);
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && navPanel.classList.contains('open')) closeMenu(true);
+  });
+
+  /* ---------- FAQ accordion (only one open) ---------- */
+  var items = Array.prototype.slice.call(document.querySelectorAll('.faq-item'));
+  function closeItem(item){
+    var btn = item.querySelector('.faq-q');
+    var ans = item.querySelector('.faq-answer');
+    item.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+    ans.style.height = '0px';
+  }
+  function openItem(item){
+    var btn = item.querySelector('.faq-q');
+    var ans = item.querySelector('.faq-answer');
+    item.classList.add('open');
+    btn.setAttribute('aria-expanded','true');
+    ans.style.height = ans.scrollHeight + 'px';
+  }
+  items.forEach(function(item){
+    var btn = item.querySelector('.faq-q');
+    var ans = item.querySelector('.faq-answer');
+    btn.addEventListener('click', function(){
+      if(item.classList.contains('open')){
+        closeItem(item);
+      } else {
+        items.forEach(closeItem);
+        openItem(item);
+      }
+    });
+    ans.addEventListener('transitionend', function(e){
+      if(e.propertyName !== 'height') return;
+      if(item.classList.contains('open')) ans.style.height = 'auto';
+    });
+  });
+  window.addEventListener('resize', function(){
+    items.forEach(function(item){
+      if(item.classList.contains('open')) item.querySelector('.faq-answer').style.height = 'auto';
+    });
+  });
+
+  /* ---------- Header shadow on scroll ---------- */
+  var header = document.querySelector('.site-header');
+  function onScroll(){ header.classList.toggle('scrolled', window.scrollY > 4); }
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive:true });
+
+  /* ---------- Scroll reveal ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  }
+})();
+</script>
+</body>
+</html>

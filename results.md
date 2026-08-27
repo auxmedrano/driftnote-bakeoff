@@ -62,6 +62,16 @@ values were `--accent:#f4623f; --accent-ink:#1a120e; --accent-2:#63b096;`
 (see git history for the pre-fix version). Full transcript:
 `qwen-dark-theme-fix.raw.txt`.
 
+## Does more planning produce better results?
+
+Separate follow-up experiment: all four models re-run under internal
+reasoning (`think=high`) and under an explicit two-step plan-then-build
+workflow, scored against a fixed 23-item checklist. See
+[`planning-experiment/results.md`](planning-experiment/results.md).
+Headline finding: for `gpt-oss:20b`, an explicit written plan reached the
+same perfect score as heavy internal reasoning at ~5.5x less wall-clock
+time.
+
 ## Files
 
 - `prompt.txt` — the exact prompt sent to every model

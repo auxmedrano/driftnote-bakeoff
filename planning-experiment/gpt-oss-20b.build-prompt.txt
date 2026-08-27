@@ -1,0 +1,96 @@
+Implement the following design plan as a single self-contained HTML file (inline CSS and JS only, no external dependencies, CDNs, or web fonts). Follow the plan's palette, typography, layout, and accessibility decisions exactly.
+
+DESIGN PLAN:
+
+.
+
+**1. COLOR PALETTE**
+
+| Token | Role | Hex Value | Rationale |
+|-------|------|-----------|-----------|
+| `--bg` | Background | `#F7F9FC` (light) / `#121212` (dark) | Neutral, airy backdrop that keeps notes readable and feels like paper. |
+| `--surface` | Surface | `#FFFFFF` (light) / `#1E1E1E` (dark) | High‑contrast surface for cards and modals, mimicking sticky‑note texture. |
+| `--ink` | Ink/Text | `#111111` (light) / `#E5E5E5` (dark) | Deep dark text for legibility; light‑mode black feels crisp. |
+| `--muted` | Muted Text | `#5A5A5A` (light) / `#A0A0A0` (dark) | Subtle secondary copy without stealing focus. |
+| `--border` | Border | `#E0E0E0` (light) / `#333333` (dark) | Delicate separators that maintain a clean look. |
+| `--accent` | Accent | `#5C6BC0` | Indigo‑blue evokes creativity and calm, matching the note‑taking vibe. |
+| `--accent-text` | Accent Text | `#FFFFFF` | High contrast on accent background for CTA buttons and highlighted tiers. |
+
+---
+
+**2. TYPOGRAPHY**
+
+| Element | Font Stack | Size (rem) |
+|---------|------------|------------|
+| **Display** (logo, hero headline) | `sans-serif` (system font) | `3.0` |
+| **Body** (paragraphs, copy) | `system-ui`, fallback to `-apple-system`, `Segoe UI`, `Roboto`, `Arial`, `sans-serif` | `1.0` |
+| **Heading Scale** | | |
+| H1 | `sans-serif` | `2.5` |
+| H2 | `sans-serif` | `2.0` |
+| H3 | `sans-serif` | `1.75` |
+| H4 | `sans-serif` | `1.5` |
+| **Body Scale** | | |
+| Paragraph | `sans-serif` | `1.0` |
+| Small Copy | `sans-serif` | `0.875` |
+| Button Text | `sans-serif` | `0.875` (weight 600) |
+
+---
+
+**3. LAYOUT**
+
+| Section | 1440 px (Desktop) | 768 px (Tablet) | 375 px (Mobile) |
+|---------|-------------------|----------------|----------------|
+| **Header** | Fixed top bar: logo left, horizontal nav right, spaced 3 rem. | Same layout, but nav collapsed behind hamburger icon. | Hamburger button visible, logo centered, nav hidden until toggle. |
+| **Hero** | Full‑width section, centered headline & subheadline (max‑width 800 px), CTA button 200 px wide, 2 rem vertical spacing. | Reduce max‑width to 90%, stack headline and CTA vertically with 1.5 rem gap. | Text scales to 80% width, CTA full‑width, 1 rem padding. |
+| **Features** | 3‑column grid, equal gutters 3 rem, each card 320 px wide. | 2‑column grid (600 px width each), gutters 2 rem. | Single‑column stack, 1 rem padding. |
+| **Pricing** | 2‑column flexbox, “Recommended” tier highlighted with accent border, spacing 3 rem. | Stack tiers vertically, centered, 2 rem spacing. | Full‑width cards, 1 rem spacing. |
+| **FAQ** | Accordion list, each item full width, gutter 1.5 rem. | Stack items, same width, 1.5 rem spacing. | Full‑width accordion, 1 rem padding. |
+| **Footer** | Horizontal links, social icons, copyright centered, 3 rem padding. | Links stacked, social icons below, 2 rem spacing. | Single‑column stack, 1 rem spacing. |
+
+---
+
+**4. ACCORDION BEHAVIOR**
+
+1. **Markup** – Each FAQ item is a `<button>` (trigger) followed by a `<div>` (panel).  
+2. **Initial State** – All panels hidden (`height: 0; overflow: hidden;`).  
+3. **Click Logic**  
+   - When a trigger is clicked:  
+     - If its panel is already open, collapse it (set `height: 0`, remove `aria-expanded="true"`).  
+     - If it’s closed:  
+       - Collapse any currently open panel (set its height to 0, update `aria-expanded`).  
+       - Expand the clicked panel (calculate scrollHeight, set `height` to that value, set `aria-expanded="true"`).  
+4. **ARIA** – Each button has `aria-controls="panel-id"` and `aria-expanded="false/true"`. The panel has `id="panel-id"` and `role="region"`.  
+5. **Only One Open** – The script always queries for any button with `aria-expanded="true"`; if found, it collapses it before expanding the new one. No two panels can be open simultaneously.
+
+---
+
+**5. ACCESSIBILITY CHECKLIST**
+
+| Element | aria‑attribute(s) | Purpose |
+|---------|-------------------|---------|
+| **Hamburger Toggle** | `aria-label="Open navigation menu"` (when closed), `aria-label="Close navigation menu"` (when open), `aria-expanded="false/true"`, `aria-controls="main-nav"` | Indicates state and controls the nav region. |
+| **Navigation Links** | None required beyond native `<a>` tags. |
+| **Accordion Trigger** | `aria-expanded`, `aria-controls` | Signals state and linkage to panel. |
+| **Accordion Panel** | `role="region"`, `aria-labelledby` (link back to trigger) | Provides a labeled region for assistive tech. |
+
+**Keyboard Operability**
+
+- **Menu Toggle** – Focusable `<button>`; toggles nav with Space/Enter. When opened, focus is trapped within the nav until closed.  
+- **Accordion** – Each trigger is a `<button>`; can be focused via Tab/Shift‑Tab. Space or Enter toggles expansion following the behavior above. Arrow keys can optionally move focus between triggers (optional enhancement).  
+
+All interactive elements use native semantics (`<button>`, `<nav>`, `<header>`, `<section>`, `<footer>`), ensuring screen readers announce them correctly. Color contrasts meet WCAG AA for both light and dark themes.
+
+ORIGINAL SPECIFICATION (for reference):
+
+Build a landing page for a fictional local-first note-taking app called "Driftnote". Requirements:
+
+- Sticky header with a logo/wordmark and nav links that collapses into a hamburger menu below 768px width
+- Hero section: headline, subheadline, call-to-action button
+- A 3-column features section
+- A pricing section with two tiers (Free / Pro), one visually marked as "recommended"
+- An FAQ section using a JS-driven accordion (click to expand/collapse, only one open at a time)
+- Must look correct and uncluttered at 375px, 768px, and 1440px widths
+- Support both light and dark mode via prefers-color-scheme, plus a manual toggle button that overrides it
+- Semantic HTML5 elements, keyboard-operable interactive elements, appropriate aria- attributes
+
+Output only the complete HTML file in a single ```html code block. No explanation before or after.

@@ -1,0 +1,25 @@
+You are about to build a landing page (full specification below), but first write ONLY a design plan in plain text. Do not write any HTML, CSS, or JS yet.
+
+Cover exactly these five things:
+
+1. COLOR PALETTE — name each token's role (background, surface, ink/text, muted text, border, accent, accent-text) with a specific hex value and one sentence on why that choice fits the subject.
+2. TYPOGRAPHY — which font stack(s) for display vs. body text, and the heading/body type scale (sizes).
+3. LAYOUT — for header, hero, features, pricing, FAQ, and footer: describe the structure at 1440px, at 768px, and at 375px.
+4. ACCORDION BEHAVIOR — the exact interaction logic for the FAQ: what happens on click, and precisely how only one item stays open at a time.
+5. ACCESSIBILITY CHECKLIST — which specific elements need aria-expanded / aria-controls / aria-label, and how keyboard operability is ensured for the menu toggle and the accordion.
+
+SPECIFICATION:
+
+Build a single self-contained HTML file (inline CSS and JS only, no external dependencies, CDNs, or web fonts) for a landing page for a fictional local-first note-taking app called "Driftnote". Requirements:
+
+- Sticky header with a logo/wordmark and nav links that collapses into a hamburger menu below 768px width
+- Hero section: headline, subheadline, call-to-action button
+- A 3-column features section
+- A pricing section with two tiers (Free / Pro), one visually marked as "recommended"
+- An FAQ section using a JS-driven accordion (click to expand/collapse, only one open at a time)
+- Must look correct and uncluttered at 375px, 768px, and 1440px widths
+- Support both light and dark mode via prefers-color-scheme, plus a manual toggle button that overrides it
+- Use a coherent color palette and real typographic hierarchy — not default browser styling
+- Semantic HTML5 elements, keyboard-operable interactive elements, appropriate aria- attributes
+
+Output ONLY the plan as structured plain text (markdown headings/bullets are fine). Do not write any code.
