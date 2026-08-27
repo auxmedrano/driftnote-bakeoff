@@ -134,6 +134,34 @@ td.num{text-align:right}
   .top__meta{display:none}
 }
 
+/* ---------- Planning experiment ---------- */
+.planning{padding:48px 0 64px; border-top:1px solid var(--line)}
+.planning h2{font-size:1.2rem; margin-bottom:4px}
+.planning .sub{color:var(--ink-soft); margin:0 0 24px; max-width:64ch}
+.planning__callout{
+  border:1px solid var(--line); background:var(--surface); box-shadow:var(--shadow);
+  padding:20px 22px; margin-bottom:28px; display:flex; gap:18px; align-items:baseline; flex-wrap:wrap;
+}
+.planning__callout .big{font-family:var(--mono); font-weight:700; font-size:1.5rem; color:var(--accent)}
+.planning__callout p{margin:0; color:var(--ink-soft); max-width:56ch}
+.cond-badge{
+  font-family:var(--mono); font-size:.68rem; font-weight:600; letter-spacing:.03em;
+  border:1px solid var(--line-strong); padding:2px 7px; display:inline-block; color:var(--ink-soft);
+}
+.cond-badge[data-cond="A"]{border-color:var(--ink-faint)}
+.cond-badge[data-cond="B"]{border-color:var(--accent); color:var(--accent)}
+.cond-badge[data-cond="C"]{border-color:var(--accent); background:var(--accent); color:var(--accent-ink)}
+tr.hl td{background:var(--surface-2)}
+.planning__legend{display:flex; gap:22px; flex-wrap:wrap; margin:16px 0 28px; font-size:.82rem; color:var(--ink-soft)}
+.planning__legend span.cond-badge{margin-right:6px}
+.planning__note{
+  border-left:2px solid var(--accent); padding:2px 0 2px 16px; margin-top:24px;
+  color:var(--ink-soft); font-size:.9rem; max-width:70ch;
+}
+.planning__note strong{color:var(--ink)}
+.planning__more{margin-top:20px; font-size:.9rem}
+.planning__more a{color:var(--accent); text-decoration:none; border-bottom:1px solid currentColor}
+
 /* ---------- Footer ---------- */
 .foot{border-top:1px solid var(--line); padding:28px 0; color:var(--ink-faint); font-size:.85rem}
 .foot a{color:var(--ink-soft); text-decoration:underline; text-underline-offset:2px}
@@ -351,6 +379,125 @@ td.num{text-align:right}
       </article>
 
     </div>
+  </div>
+</section>
+
+<section class="planning">
+  <div class="wrap">
+    <h2>Does more planning help?</h2>
+    <p class="sub">Follow-up experiment: each model re-run under two different
+    kinds of "planning" — internal reasoning (<code>think=high</code>) versus
+    an explicit two-step workflow where the model writes a design plan first,
+    then builds from it — scored against a fixed 23-item checklist against
+    the original brief.</p>
+
+    <div class="planning__callout">
+      <span class="big">5.5×</span>
+      <p>For <strong>gpt-oss:20b</strong>, writing an explicit plan first reached
+      the exact same perfect score as heavy internal reasoning — at 5.5× less
+      wall-clock time (49s vs. 4m 27s) and 5.7× fewer tokens.</p>
+    </div>
+
+    <div class="planning__legend">
+      <div><span class="cond-badge" data-cond="A">A</span> No planning (baseline, one-shot)</div>
+      <div><span class="cond-badge" data-cond="B">B</span> Internal reasoning (think=high)</div>
+      <div><span class="cond-badge" data-cond="C">C</span> Explicit plan, then build</div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Condition</th>
+            <th class="num">Score</th>
+            <th class="num">Time</th>
+            <th class="num">Tokens</th>
+            <th class="num">Breakpoints</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-1)"></span>qwen3.8-27b-q3</span></td>
+            <td><span class="cond-badge" data-cond="A">A</span></td>
+            <td class="num">23/23</td><td class="num">6m 41s</td><td class="num">11,265</td><td class="num">8</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-1)"></span>qwen3.8-27b-q3</span></td>
+            <td><span class="cond-badge" data-cond="B">B</span></td>
+            <td class="num">23/23</td><td class="num">20m 37s</td><td class="num">32,440</td><td class="num">12</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-1)"></span>qwen3.8-27b-q3</span></td>
+            <td><span class="cond-badge" data-cond="C">C</span></td>
+            <td class="num">23/23</td><td class="num">8m 9s</td><td class="num">13,447</td><td class="num">10</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-2)"></span>gpt-oss:20b</span></td>
+            <td><span class="cond-badge" data-cond="A">A</span></td>
+            <td class="num">20/23</td><td class="num">28.4s</td><td class="num">2,457</td><td class="num">3</td>
+          </tr>
+          <tr class="hl">
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-2)"></span>gpt-oss:20b</span></td>
+            <td><span class="cond-badge" data-cond="B">B</span></td>
+            <td class="num">23/23</td><td class="num">4m 27s</td><td class="num">24,656</td><td class="num">6</td>
+          </tr>
+          <tr class="hl">
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-2)"></span>gpt-oss:20b</span></td>
+            <td><span class="cond-badge" data-cond="C">C</span></td>
+            <td class="num">23/23</td><td class="num">49.0s</td><td class="num">4,389</td><td class="num">11</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-3)"></span>gemma4:latest</span></td>
+            <td><span class="cond-badge" data-cond="A">A</span></td>
+            <td class="num">22/23</td><td class="num">1m 28s</td><td class="num">6,172</td><td class="num">3</td>
+          </tr>
+          <tr class="hl">
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-3)"></span>gemma4:latest</span></td>
+            <td><span class="cond-badge" data-cond="B">B</span></td>
+            <td class="num">23/23</td><td class="num">1m 33s</td><td class="num">6,588</td><td class="num">5</td>
+          </tr>
+          <tr class="hl">
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-3)"></span>gemma4:latest</span></td>
+            <td><span class="cond-badge" data-cond="C">C</span></td>
+            <td class="num">23/23</td><td class="num">2m 4s</td><td class="num">8,675</td><td class="num">5</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-4)"></span>gemma4:12b</span></td>
+            <td><span class="cond-badge" data-cond="A">A</span></td>
+            <td class="num">23/23</td><td class="num">1m 27s</td><td class="num">4,270</td><td class="num">3</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-4)"></span>gemma4:12b</span></td>
+            <td><span class="cond-badge" data-cond="B">B</span></td>
+            <td class="num">23/23</td><td class="num">2m 5s</td><td class="num">6,268</td><td class="num">2</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-4)"></span>gemma4:12b</span></td>
+            <td><span class="cond-badge" data-cond="C">C</span></td>
+            <td class="num">23/23</td><td class="num">2m 8s</td><td class="num">6,304</td><td class="num">3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="planning__note"><strong>More planning only helps where there's a
+    gap to close.</strong> qwen3.8-27b-q3 and gemma4:12b already scored 23/23
+    at baseline — neither condition could improve on a perfect score, and
+    extra planning showed up as breakpoint depth instead, inconsistently
+    (qwen gained depth under reasoning; gemma4:12b's breakpoint count actually
+    <em>dropped</em> under reasoning, 3→2). Only the two models with a real
+    baseline gap (gpt-oss:20b, gemma4:latest) show a clean, unambiguous
+    "planning helped" result — and for gpt-oss, the cheap kind of planning
+    (writing it down) worked exactly as well as the expensive kind (thinking
+    harder).</p>
+
+    <p class="planning__note">This checklist went through four rounds of
+    fixes after manual verification caught real false negatives in the
+    scoring script itself — worth knowing before trusting these numbers at
+    face value.</p>
+
+    <p class="planning__more"><a href="planning-experiment/results.md">Full methodology, every prompt, every raw transcript, and the scoring-bug postmortem →</a></p>
   </div>
 </section>
 
