@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Driftnote - Your notes, locally owned. Secure, fast, and offline-first note-taking.">
+    <title>Driftnote | Local-First Note Taking</title>
+    <style>
+        :root {
+            /* Color Palette - Light Mode */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-main: #1a1a1b;
+            --text-muted: #65676b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: #e5e7eb;
+            --card-bg: #ffffff;
+            --highlight: #eef2ff;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            /* Color Palette - Dark Mode */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #818cf8;
+            --accent-hover: #a5b4fc;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --highlight: #312e81;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3 {
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.6rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-outline {
+            border: 2px solid var(--border);
+            padding: 0.8rem 1.6rem;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            padding: 0.75rem 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+
+        /* Hamburger Menu */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 8rem 0 6rem;
+            text-align: center;
+            background: radial-gradient(circle at center, var(--highlight) 0%, transparent 70%);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            margin-bottom: 1.5rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        /* Features */
+        .features {
+            padding: 6rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2.5rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        /* Pricing */
+        .pricing {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            padding: 3rem;
+            border-radius: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            position: relative;
+            text-align: center;
+        }
+
+        .pricing-card.recommended {
+            border: 2px solid var(--accent);
+            transform: scale(1.05);
+        }
+
+        .badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 1rem 0;
+        }
+
+        .price span {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        /* Accordion */
+        .faq {
+            padding: 6rem 0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .accordion-item {
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0.5rem;
+        }
+
+        .accordion-header {
+            width: 100%;
+            padding: 1.5rem;
+            text-align: left;
+            background: none;
+            border: none;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 200px;
+            padding-bottom: 1.5rem;
+        }
+
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .feature-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                padding: 2rem;
+                background: var(--bg-primary);
+                border-bottom: 1px solid var(--border);
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card.recommended {
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 3rem; }
+            .pricing-grid { gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="#" class="logo">Driftnote</a>
+                <div class="nav-links" id="navLinks">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#faq">FAQ</a>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                </div>
+                <button class="menu-toggle" id="menuToggle" aria-label="Open Menu">☰</button>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Your thoughts, <br><span style="color: var(--accent)">locally owned.</span></h1>
+            <p>Experience the speed of local-first note-taking. Your data never leaves your device unless you choose to sync it.</p>
+            <a href="#pricing" class="btn btn-primary">Get Started Free</a>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Built for your flow.</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Instant Speed</h3>
+                    <p>No loading spinners. Since notes are stored on your local disk, retrieval is instantaneous.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Offline First</h3>
+                    <p>Work on a plane, in a tunnel, or in a cafe. Driftnote works everywhere, regardless of signal.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Privacy Core</h3>
+                    <p>End-to-end encryption and local storage mean your private thoughts stay private.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <div class="section-title">
+                <h2>Simple Pricing</h2>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <p>For personal use</p>
+                    <div class="price">$0<span>/mo</span></div>
+                    <ul style="margin: 2rem 0; text-align: left; display: inline-block;">
+                        <li>✓ Unlimited notes</li>
+                        <li>✓ Local storage</li>
+                        <li>✓ Basic Markdown</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Get Started</a>
+                </div>
+                <div class="pricing-card recommended">
+                    <div class="badge">Recommended</div>
+                    <h3>Pro</h3>
+                    <p>For power users</p>
+                    <div class="price">$8<span>/mo</span></div>
+                    <ul style="margin: 2rem 0; text-align: left; display: inline-block;">
+                        <li>✓ Everything in Free</li>
+                        <li>✓ Cloud Sync</li>
+                        <li>✓ Custom Themes</li>
+                        <li>✓ Team Collaboration</li>
+                    </ul>
+                    <a href="#" class="btn btn-primary">Go Pro</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="faq">
+        <div class="container">
+            <div class="section-title">
+                <h2>Common Questions</h2>
+            </div>
+            <div class="accordion">
+                <div class="accordion-item">
+                    <button class="accordion-header" aria-expanded="false" aria-controls="faq1">
+                        What is "Local-First"?
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div id="faq1" class="accordion-content">
+                        Local-first means the primary copy of your data lives on your device. This ensures high performance, offline access, and absolute privacy.
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header" aria-expanded="false" aria-controls="faq2">
+                        Is my data encrypted?
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div id="faq2" class="accordion-content">
+                        Yes. If you choose to use our optional cloud sync, your data is encrypted with your personal key before it ever leaves your device.
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header" aria-expanded="false" aria-controls="faq3">
+                        Can I use it on multiple devices?
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div id="faq3" class="accordion-content">
+                        Yes! The Pro plan includes a seamless sync engine that keeps your notes updated across mobile, desktop, and web.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="padding: 4rem 0; border-top: 1px solid var(--border); text-align: center;">
+        <div class="container">
+            <p>&copy; 2023 Driftnote Inc. Built for the thinkers.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Theme Management
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        const currentTheme = localStorage.getItem('theme') || 
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+        if (currentTheme === 'dark') {
+            body.setAttribute('data-theme', 'dark');
+            themeIcon.innerText = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            if (body.getAttribute('data-theme') === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.innerText = '☀️';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.innerText = '🌙';
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Mobile Menu
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const icon = menuToggle.innerHTML;
+            menuToggle.innerHTML = navLinks.classList.contains('active') ? '✕' : '☰';
+        });
+
+        // Accordion Logic
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+        
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const parent = header.parentElement;
+                const isExpanded = parent.classList.contains('active');
+                
+                // Close all others
+                document.querySelectorAll('.accordion-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
+                });
+
+                // Toggle clicked
+                if (!isExpanded) {
+                    parent.classList.add('active');
+                    header.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                menuToggle.innerHTML = '☰';
+            });
+        });
+    </script>
+</body>
+</html>

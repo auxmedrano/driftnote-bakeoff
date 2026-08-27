@@ -1,0 +1,13 @@
+Build a single self-contained HTML file (inline CSS and JS only, no external dependencies, CDNs, or web fonts) for a landing page for a fictional local-first note-taking app called "Driftnote". Requirements:
+
+- Sticky header with a logo/wordmark and nav links that collapses into a hamburger menu below 768px width
+- Hero section: headline, subheadline, call-to-action button
+- A 3-column features section
+- A pricing section with two tiers (Free / Pro), one visually marked as "recommended"
+- An FAQ section using a JS-driven accordion (click to expand/collapse, only one open at a time)
+- Must look correct and uncluttered at 375px, 768px, and 1440px widths
+- Support both light and dark mode via prefers-color-scheme, plus a manual toggle button that overrides it
+- Use a coherent color palette and real typographic hierarchy — not default browser styling
+- Semantic HTML5 elements, keyboard-operable interactive elements, appropriate aria- attributes
+
+Output only the complete HTML file in a single ```html code block. No explanation before or after.

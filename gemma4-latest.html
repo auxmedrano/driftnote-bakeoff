@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driftnote - Local-First Notes</title>
+    <style>
+        /* --- 1. CSS Variables & Global Reset --- */
+        :root {
+            /* Light Mode Defaults */
+            --color-bg: #ffffff;
+            --color-text: #1a1a1a;
+            --color-primary: #007aff; /* A vibrant blue for action */
+            --color-secondary: #f0f4f8; /* Light background accent */
+            --color-border: #e0e0e0;
+            --color-success: #34c759;
+            --color-shadow: rgba(0, 0, 0, 0.08);
+
+            /* Typography */
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-heading: 'Georgia', serif;
+
+            /* Spacing & Sizing */
+            --padding-section: 64px;
+        }
+
+        body.dark-mode {
+            --color-bg: #1a1a2e;
+            --color-text: #e0e0e0;
+            --color-primary: #4a90e2;
+            --color-secondary: #2c2c44;
+            --color-border: #3a3a55;
+            --color-success: #5ac85a;
+            --color-shadow: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Utility classes */
+        .container {
+            width: 90%;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 1rem; /* Padding for small screens */
+        }
+
+        /* --- 2. Header & Navigation --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--color-bg);
+            box-shadow: 0 2px 4px var(--color-shadow);
+            padding: 1rem 0;
+            transition: background-color 0.3s;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            cursor: pointer;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--color-text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.25rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--color-primary);
+        }
+
+        /* Hamburger Menu Setup */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 10px;
+            gap: 5px;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: var(--color-text);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        /* Responsive Header Adjustments */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+            nav {
+                /* The actual menu panel */
+                position: absolute;
+                top: 68px; /* Height of header */
+                left: 0;
+                right: 0;
+                background-color: var(--color-bg);
+                box-shadow: 0 4px 6px var(--color-shadow);
+                display: none; /* Hidden by default */
+                flex-direction: column;
+                padding: 1rem;
+                border-top: 1px solid var(--color-border);
+            }
+
+            nav.active {
+                display: flex;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+                padding-top: 0.5rem;
+            }
+            
+            nav li {
+                width: 100%;
+            }
+        }
+
+        /* --- 3. General Components & Buttons --- */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.75rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            border: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #005bbd; /* Darker shade on hover */
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--color-primary);
+            color: var(--color-primary);
+            padding: 0.75rem 2rem;
+        }
+        .btn-secondary:hover {
+            background-color: var(--color-secondary);
+            transform: translateY(-1px);
+        }
+
+        /* --- 4. Hero Section --- */
+        #hero {
+            padding: 80px 0;
+            text-align: center;
+            background: var(--color-secondary);
+        }
+
+        #hero h1 {
+            font-size: 3.5rem;
+            font-family: var(--font-heading);
+            margin-bottom: 1rem;
+            line-height: 1.1;
+            background: linear-gradient(1.5em, var(--color-text), var(--color-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #hero p {
+            font-size: 1.3rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            color: var(--color-text);
+            opacity: 0.8;
+        }
+
+        /* --- 5. Features Section --- */
+        #features {
+            padding: var(--padding-section) 0;
+            background-color: var(--color-bg);
+        }
+
+        #features h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            background-color: var(--color-secondary);
+            border: 1px solid var(--color-border);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h3 {
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        /* --- 6. Pricing Section --- */
+        #pricing {
+            padding: var(--padding-section) 0;
+            background-color: var(--color-secondary);
+            text-align: center;
+        }
+
+        #pricing h2 {
+            margin-bottom: 3rem;
+            font-size: 2.2rem;
+        }
+
+        .pricing-grid {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        .price-card {
+            flex: 1;
+            max-width: 350px;
+            padding: 2rem;
+            background: var(--color-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--color-border);
+            transition: transform 0.3s;
+            text-align: left;
+        }
+        
+        .price-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .price-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-tag {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+
+        .price-tag small {
+            font-size: 1rem;
+            color: var(--color-text);
+        }
+
+        .price-card.recommended {
+            border: 3px solid var(--color-success);
+            box-shadow: 0 15px 40px rgba(52, 199, 89, 0.2);
+            transform: scale(1.05);
+        }
+
+        .price-card.recommended .price-tag {
+             color: var(--color-success);
+        }
+
+        .plan-details {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 1.5rem;
+        }
+
+        .plan-details li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-text);
+        }
+        
+        .plan-details li::before {
+            content: '✓';
+            color: var(--color-success);
+            font-weight: bold;
+        }
+
+        /* Responsive Pricing */
+        @media (max-width: 1024px) {
+             .pricing-grid {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+            .price-card {
+                max-width: 90%;
+                width: 100%;
+            }
+        }
+        
+        /* --- 7. FAQ Section --- */
+        #faq {
+            padding: var(--padding-section) 0;
+        }
+        #faq h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+        }
+
+        .faq-item {
+            border: 1px solid var(--color-border);
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: var(--color-bg);
+        }
+
+        .faq-question {
+            padding: 1rem 1.5rem;
+            background-color: var(--color-secondary);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .faq-question:hover {
+            background-color: var(--color-secondary);
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+        }
+
+        .faq-question[aria-expanded="true"]::after {
+            content: '−';
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            background-color: var(--color-bg);
+        }
+
+        .faq-answer.active {
+            padding: 1rem 1.5rem;
+            max-height: 200px; /* Sufficiently large value */
+        }
+
+        /* --- 8. Footer & Dark Mode Toggle --- */
+        footer {
+            padding: 40px 0;
+            margin-top: 40px;
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--color-text);
+            opacity: 0.7;
+        }
+
+        /* Dark Mode Toggle Integration (Placed in header or footer for accessibility) */
+        .mode-toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .mode-toggle-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--color-text);
+            padding: 5px;
+            transition: transform 0.2s;
+        }
+        .mode-toggle-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* --- 9. Media Queries for smaller devices --- */
+        @media (max-width: 375px) {
+            /* Scale down font sizes */
+            #hero h1 {
+                font-size: 2.5rem;
+            }
+            #hero p {
+                font-size: 1.1rem;
+            }
+            
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .feature-card {
+                padding: 1.2rem;
+            }
+
+            /* Reduce padding */
+            :root {
+                --padding-section: 32px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content container">
+            <div class="logo">Driftnote</div>
+            
+            <!-- Navigation for Desktop -->
+            <nav aria-label="Main navigation">
+                <ul>
+                    <li><a href="#features" class="nav-link">Features</a></li>
+                    <li><a href="#pricing" class="nav-link">Pricing</a></li>
+                    <li><a href="#faq" class="nav-link">FAQ</a></li>
+                    <li><button class="btn btn-secondary" aria-label="Login">Sign In</button></li>
+                </ul>
+            </nav>
+            
+            <!-- Hamburger Menu -->
+            <div class="hamburger" id="hamburger" aria-controls="main-nav" aria-expanded="false">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </div>
+            
+            <!-- Mode Toggle (Visible on all sizes in the header area) -->
+            <div class="mode-toggle-wrapper" aria-label="Theme toggle">
+                <button id="themeToggle" class="mode-toggle-btn" aria-label="Toggle Dark Mode">🌙</button>
+            </div>
+
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO SECTION -->
+        <section id="hero">
+            <div class="container">
+                <h1>Capture Your Thoughts. Sync Anywhere. <br> Locally First.</h1>
+                <p>Driftnote keeps your private notes stored directly on your devices, giving you speed, privacy, and reliability, without the cloud lock-in.</p>
+                <a href="#" class="btn btn-primary btn-large">Start Writing Free</a>
+            </div>
+        </section>
+
+        <!-- FEATURES SECTION -->
+        <section id="features">
+            <div class="container">
+                <h2>Build Your Knowledge Graph, Not Just Notes</h2>
+                <div class="feature-grid">
+                    
+                    <article class="feature-card" aria-labelledby="feature1-title">
+                        <h3 id="feature1-title">🔒 Local Encryption</h3>
+                        <p>Your data never leaves your control. Encrypted end-to-end, ensuring maximum privacy.</p>
+                    </article>
+
+                    <article class="feature-card" aria-labelledby="feature2-title">
+                        <h3 id="feature2-title">⚡ Instant Performance</h3>
+                        <p>Since everything lives locally, loading and searching feels instantaneous, regardless of connectivity.</p>
+                    </article>
+
+                    <article class="feature-card" aria-labelledby="feature3-title">
+                        <h3 id="feature3-title">🔗 Graph Linking</h3>
+                        <p>Connect notes like atoms in a network. Build rich, interconnected knowledge maps seamlessly.</p>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- PRICING SECTION -->
+        <section id="pricing">
+            <div class="container">
+                <h2>Simple, Transparent Pricing</h2>
+                <div class="pricing-grid">
+                    
+                    <!-- Free Tier -->
+                    <div class="price-card" aria-labelledby="free-title">
+                        <h3 class="price-header" id="free-title">Free</h3>
+                        <div class="price-tag">$0<small>/forever</small></div>
+                        <ul class="plan-details">
+                            <li>Up to 50 notes</li>
+                            <li>Basic sync</li>
+                            <li>Core features</li>
+                            <li>☁️ Limited sharing</li>
+                        </ul>
+                        <button class="btn btn-secondary" aria-label="Select Free Plan">Get Started</button>
+                    </div>
+
+                    <!-- Pro Tier (Recommended) -->
+                    <div class="price-card recommended" aria-labelledby="pro-title">
+                        <h3 class="price-header" id="pro-title">Pro</h3>
+                        <div class="price-tag">$7<small>/month</small></div>
+                        <ul class="plan-details">
+                            <li>Unlimited notes</li>
+                            <li>End-to-end encryption</li>
+                            <li>Graph Linking Pro</li>
+                            <li>⚙️ Full feature access</li>
+                        </ul>
+                        <button class="btn btn-primary" aria-label="Select Pro Plan">Go Pro Now</button>
+                    </div>
+
+                    <!-- Enterprise Tier (Placeholder) -->
+                    <div class="price-card" aria-labelledby="enterprise-title">
+                        <h3 class="price-header" id="enterprise-title">Enterprise</h3>
+                        <div class="price-tag">Custom</div>
+                        <ul class="plan-details">
+                            <li>Everything in Pro</li>
+                            <li>SAML SSO</li>
+                            <li>Dedicated support</li>
+                            <li>On-premise hosting</li>
+                        </ul>
+                        <button class="btn btn-secondary" aria-label="Contact sales">Contact Sales</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section id="faq">
+            <div class="container">
+                <h2>Frequently Asked Questions</h2>
+                
+                <div class="faq-item">
+                    <button class="faq-question" id="faq1-trigger" aria-expanded="false" aria-controls="faq1-answer">
+                        What makes "Local-First" important?
+                        <span>+</span>
+                    </button>
+                    <div id="faq1-answer" class="faq-answer" role="region" aria-labelledby="faq1-trigger">
+                        <p>Local-first means your primary copy of your notes resides and is managed on your physical device first. This means offline access is always guaranteed, and you are never entirely dependent on a third-party cloud service to view your thoughts.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" id="faq2-trigger" aria-expanded="false" aria-controls="faq2-answer">
+                        Does it work with all operating systems?
+                        <span>+</span>
+                    </button>
+                    <div id="faq2-answer" class="faq-answer" role="region" aria-labelledby="faq2-trigger">
+                        <p>Yes. Driftnote is built for modern cross-platform consistency, ensuring a smooth experience whether you are on iOS, macOS, Windows, or Linux.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" id="faq3-trigger" aria-expanded="false" aria-controls="faq3-answer">
+                        How is my data synced across devices?
+                        <span>+</span>
+                    </button>
+                    <div id="faq3-answer" class="faq-answer" role="region" aria-labelledby="faq3-trigger">
+                        <p>When you use Pro, we provide an encrypted, peer-to-peer sync mechanism. It securely syncs your local database replica to all connected devices without exposing your raw data.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Driftnote Inc. Privacy &middot; Terms</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. Theme Toggling (Dark/Light Mode) ---
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // Check system preference first
+        let currentMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        
+        // Initialize body class based on local storage or system preference
+        if (localStorage.getItem('theme') === 'dark') {
+            currentMode = 'dark';
+        } else if (localStorage.getItem('theme') === 'light') {
+            currentMode = 'light';
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            currentMode = 'dark';
+        }
+
+        function applyTheme(mode) {
+            if (mode === 'dark') {
+                body.classList.add('dark-mode');
+                themeToggle.textContent = '☀️'; // Sun icon for switching to light
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.remove('dark-mode');
+                themeToggle.textContent = '🌙'; // Moon icon for switching to dark
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Set initial theme and event listener
+        applyTheme(currentMode);
+        themeToggle.addEventListener('click', () => {
+            if (body.classList.contains('dark-mode')) {
+                applyTheme('light');
+            } else {
+                applyTheme('dark');
+            }
+        });
+
+        // --- 2. Mobile Menu Toggle (Hamburger) ---
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.querySelector('nav');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const navButton = document.querySelector('.header-content button[aria-label="Login"]');
+
+        function toggleMenu() {
+            const isExpanded = hamburger.getAttribute('aria-expanded') === 'true' ? false : true;
+            hamburger.setAttribute('aria-expanded', isExpanded);
+            navMenu.classList.toggle('active', isExpanded);
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+
+        // Close menu when a link is clicked (for SPA-like behavior)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // --- 3. FAQ Accordion JS ---
+        const faqTriggers = document.querySelectorAll('.faq-question');
+
+        faqTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+                const answerId = trigger.getAttribute('aria-controls');
+                const answer = document.getElementById(answerId);
+
+                // Close all first
+                faqTriggers.forEach(t => {
+                    if (t !== trigger) {
+                        t.setAttribute('aria-expanded', 'false');
+                        document.getElementById(t.getAttribute('aria-controls')).classList.remove('active');
+                    }
+                });
+
+                if (isExpanded) {
+                    // Collapse
+                    trigger.setAttribute('aria-expanded', 'false');
+                    answer.classList.remove('active');
+                } else {
+                    // Expand
+                    trigger.setAttribute('aria-expanded', 'true');
+                    answer.classList.add('active');
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

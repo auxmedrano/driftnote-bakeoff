@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Four local LLMs (Qwen, gpt-oss, and two Gemma variants) given the identical landing-page brief on one consumer GPU, compared side by side.">
+<title>Driftnote Bake-off</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3f5f7; --surface:#ffffff; --surface-2:#e9edf1;
+  --ink:#14171c; --ink-soft:#4b535e; --ink-faint:#7c8590;
+  --line:#dbe1e6; --line-strong:#c3cbd2;
+  --accent:#c9762c; --accent-ink:#fff8f0;
+  --tag-1:#3e7d6b; --tag-2:#a1493f; --tag-3:#8a6d1f; --tag-4:#5c5a9e;
+  --shadow: 0 1px 2px rgba(20,23,28,.04), 0 18px 40px -24px rgba(20,23,28,.28);
+  --radius: 3px;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#14171a; --surface:#1b1f23; --surface-2:#22262b;
+    --ink:#e9edf1; --ink-soft:#a7b0ba; --ink-faint:#6d7680;
+    --line:#2b3036; --line-strong:#383e46;
+    --accent:#e08a3e; --accent-ink:#1b1206;
+    --tag-1:#5fa590; --tag-2:#cf7167; --tag-3:#c79c3f; --tag-4:#8886c9;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 18px 40px -24px rgba(0,0,0,.6);
+  }
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); line-height:1.55; font-size:16px;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--mono); font-weight:600; text-wrap:balance; margin:0 0 .5em; letter-spacing:-0.01em}
+a{color:inherit}
+code, .num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+
+.wrap{max-width:1180px; margin:0 auto; padding:0 24px}
+
+/* ---------- Header ---------- */
+.top{
+  border-bottom:1px solid var(--line); padding:14px 0;
+}
+.top .wrap{display:flex; align-items:center; justify-content:space-between; gap:16px}
+.top__brand{font-family:var(--mono); font-weight:600; font-size:.95rem; letter-spacing:.02em}
+.top__brand span{color:var(--accent)}
+.top__meta{font-family:var(--mono); font-size:.78rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em}
+
+/* ---------- Hero ---------- */
+.hero{padding:64px 0 48px; border-bottom:1px solid var(--line)}
+.hero__eyebrow{
+  font-family:var(--mono); font-size:.78rem; text-transform:uppercase; letter-spacing:.12em;
+  color:var(--accent); margin-bottom:18px; display:flex; align-items:center; gap:10px;
+}
+.hero__eyebrow::before{content:""; width:8px; height:8px; background:var(--accent); display:inline-block}
+.hero h1{font-size:clamp(1.9rem, 4vw, 2.9rem); max-width:16ch}
+.hero p{max-width:62ch; color:var(--ink-soft); font-size:1.05rem; margin:0 0 28px}
+.hero__facts{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:1px; background:var(--line);
+  border:1px solid var(--line); max-width:760px;
+}
+.hero__fact{background:var(--surface); padding:14px 16px}
+.hero__fact .k{display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin-bottom:6px}
+.hero__fact .v{font-family:var(--mono); font-weight:600; font-size:.95rem}
+
+/* ---------- Overview table ---------- */
+.overview{padding:48px 0; border-bottom:1px solid var(--line)}
+.overview h2{font-size:1.2rem; margin-bottom:4px}
+.overview .sub{color:var(--ink-soft); margin:0 0 24px; max-width:60ch}
+.table-scroll{overflow-x:auto; border:1px solid var(--line); background:var(--surface)}
+table{width:100%; border-collapse:collapse; min-width:720px; font-size:.88rem}
+th, td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--line); white-space:nowrap}
+th{
+  font-family:var(--mono); font-weight:500; font-size:.72rem; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--ink-faint); background:var(--surface-2);
+}
+tbody tr:last-child td{border-bottom:none}
+td.num{text-align:right}
+.model-cell{display:flex; align-items:center; gap:8px; font-weight:600}
+.dot{width:9px; height:9px; border-radius:50%; flex:none}
+
+/* ---------- Specimens ---------- */
+.specimens{padding:48px 0 64px}
+.specimens h2{font-size:1.2rem; margin-bottom:4px}
+.specimens .sub{color:var(--ink-soft); margin:0 0 32px; max-width:60ch}
+.grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:20px}
+.card{
+  border:1px solid var(--line); background:var(--surface); box-shadow:var(--shadow);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.card__head{padding:16px 18px 14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+.card__name{font-family:var(--mono); font-weight:600; font-size:1rem; display:flex; align-items:center; gap:8px}
+.card__quant{font-size:.76rem; color:var(--ink-faint); margin-top:4px}
+.card__link{
+  font-family:var(--mono); font-size:.76rem; color:var(--accent); text-decoration:none;
+  border:1px solid currentColor; padding:5px 10px; white-space:nowrap;
+}
+.card__link:hover{background:var(--accent); color:var(--accent-ink)}
+
+.frame-window{
+  position:relative; width:100%; aspect-ratio:16/10; overflow:hidden;
+  background:var(--surface-2); border-bottom:1px solid var(--line);
+}
+.frame-window iframe{
+  position:absolute; top:0; left:0; width:1440px; height:900px;
+  border:0; transform:scale(.278); transform-origin:top left; pointer-events:none;
+}
+
+.card__stats{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:1px; background:var(--line);
+  border-bottom:1px solid var(--line);
+}
+.stat{background:var(--surface); padding:10px 12px}
+.stat .k{display:block; font-size:.65rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:4px}
+.stat .v{font-family:var(--mono); font-weight:600; font-size:.9rem}
+
+.card__swatches{display:flex; padding:14px 18px; gap:6px; align-items:center}
+.swatch{width:22px; height:22px; border:1px solid rgba(0,0,0,.08); flex:none}
+.card__note{padding:0 18px 18px; color:var(--ink-soft); font-size:.86rem; margin:0}
+
+@media (max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .hero__facts{grid-template-columns:repeat(2, 1fr)}
+}
+@media (max-width:520px){
+  .card__stats{grid-template-columns:repeat(2, 1fr)}
+  .top__meta{display:none}
+}
+
+/* ---------- Footer ---------- */
+.foot{border-top:1px solid var(--line); padding:28px 0; color:var(--ink-faint); font-size:.85rem}
+.foot a{color:var(--ink-soft); text-decoration:underline; text-underline-offset:2px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top__brand">driftnote<span>·</span>bakeoff</div>
+    <div class="top__meta">RX 9070 XT / 16GB / ROCm</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero__eyebrow">Local model comparison</div>
+    <h1>Four local models, one brief, one GPU.</h1>
+    <p>Qwen3.8-27B, gpt-oss:20b, and two Gemma4 variants were each given an
+    identical prompt — build a self-contained landing page for a fictional
+    note app called Driftnote — and run independently via direct Ollama CLI
+    calls on the same 16GB card. No edits, no retries. What follows is what
+    each one actually shipped.</p>
+    <div class="hero__facts">
+      <div class="hero__fact"><span class="k">Models tested</span><span class="v">4</span></div>
+      <div class="hero__fact"><span class="k">Fastest</span><span class="v">gpt-oss:20b</span></div>
+      <div class="hero__fact"><span class="k">Most complete</span><span class="v">qwen3.8-27b-q3</span></div>
+      <div class="hero__fact"><span class="k">Speed spread</span><span class="v">3.6×</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="overview">
+  <div class="wrap">
+    <h2>At a glance</h2>
+    <p class="sub">Every output is well-formed HTML — every tag balances. What
+    varies is scope: how much of the brief each model actually built out.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Quant</th>
+            <th class="num">Size</th>
+            <th class="num">Tokens</th>
+            <th class="num">Time</th>
+            <th class="num">Speed</th>
+            <th class="num">Breakpoints</th>
+            <th class="num">aria-* attrs</th>
+            <th>Footer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-1)"></span>qwen3.8-27b-q3</span></td>
+            <td>Q3_K_L</td>
+            <td class="num">33.4 KB</td>
+            <td class="num">11,265</td>
+            <td class="num">6m 41s</td>
+            <td class="num">28.1 tok/s</td>
+            <td class="num">8</td>
+            <td class="num">42</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-2)"></span>gpt-oss:20b</span></td>
+            <td>MXFP4</td>
+            <td class="num">7.9 KB</td>
+            <td class="num">2,457</td>
+            <td class="num">28.4s</td>
+            <td class="num">100.6 tok/s</td>
+            <td class="num">3</td>
+            <td class="num">18</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-3)"></span>gemma4:latest</span></td>
+            <td>Q4_K_M</td>
+            <td class="num">23.6 KB</td>
+            <td class="num">6,172</td>
+            <td class="num">1m 28s</td>
+            <td class="num">73.6 tok/s</td>
+            <td class="num">3</td>
+            <td class="num">37</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><span class="model-cell"><span class="dot" style="background:var(--tag-4)"></span>gemma4:12b</span></td>
+            <td>Q4_K_M</td>
+            <td class="num">16.3 KB</td>
+            <td class="num">4,270</td>
+            <td class="num">1m 27s</td>
+            <td class="num">51.6 tok/s</td>
+            <td class="num">3</td>
+            <td class="num">10</td>
+            <td>Yes</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="specimens">
+  <div class="wrap">
+    <h2>The specimens</h2>
+    <p class="sub">Live previews below are the actual generated files at
+    desktop width, scaled down. Palette swatches are pulled directly from
+    each page's own stylesheet.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="card__head">
+          <div>
+            <div class="card__name"><span class="dot" style="background:var(--tag-1)"></span>qwen3.8-27b-q3</div>
+            <div class="card__quant">unsloth/Qwen3.8-27B-GGUF · Q3_K_L, 3-bit</div>
+          </div>
+          <a class="card__link" href="qwen3.8-27b-q3.html">View full page ↗</a>
+        </div>
+        <div class="frame-window"><iframe src="qwen3.8-27b-q3.html" loading="lazy" title="qwen3.8-27b-q3 preview"></iframe></div>
+        <div class="card__stats">
+          <div class="stat"><span class="k">Time</span><span class="v">6m 41s</span></div>
+          <div class="stat"><span class="k">Speed</span><span class="v">28.1 t/s</span></div>
+          <div class="stat"><span class="k">Breakpoints</span><span class="v">8</span></div>
+          <div class="stat"><span class="k">aria-*</span><span class="v">42</span></div>
+        </div>
+        <div class="card__swatches">
+          <span class="swatch" style="background:#f6f1e6"></span>
+          <span class="swatch" style="background:#cf4a2b"></span>
+          <span class="swatch" style="background:#2f6d5b"></span>
+          <span class="swatch" style="background:#211f1b"></span>
+        </div>
+        <p class="card__note">Most complete by a wide margin — per-section
+        breakpoints, full reduced-motion support, a flash-free theme loader.
+        Also the slowest: 14x gpt-oss:20b's wall time for roughly 4.6x the
+        output.</p>
+      </article>
+
+      <article class="card">
+        <div class="card__head">
+          <div>
+            <div class="card__name"><span class="dot" style="background:var(--tag-2)"></span>gpt-oss:20b</div>
+            <div class="card__quant">Server default · MXFP4</div>
+          </div>
+          <a class="card__link" href="gpt-oss-20b.html">View full page ↗</a>
+        </div>
+        <div class="frame-window"><iframe src="gpt-oss-20b.html" loading="lazy" title="gpt-oss:20b preview"></iframe></div>
+        <div class="card__stats">
+          <div class="stat"><span class="k">Time</span><span class="v">28.4s</span></div>
+          <div class="stat"><span class="k">Speed</span><span class="v">100.6 t/s</span></div>
+          <div class="stat"><span class="k">Breakpoints</span><span class="v">3</span></div>
+          <div class="stat"><span class="k">aria-*</span><span class="v">18</span></div>
+        </div>
+        <div class="card__swatches">
+          <span class="swatch" style="background:#111111"></span>
+          <span class="swatch" style="background:#3b82f6"></span>
+          <span class="swatch" style="background:#6b7280"></span>
+          <span class="swatch" style="background:#f9fafb"></span>
+        </div>
+        <p class="card__note">By far the fastest — but the only one to skip
+        the footer section entirely, and the thinnest breakpoint coverage
+        (one shared cutoff rather than per-section tuning).</p>
+      </article>
+
+      <article class="card">
+        <div class="card__head">
+          <div>
+            <div class="card__name"><span class="dot" style="background:var(--tag-3)"></span>gemma4:latest</div>
+            <div class="card__quant">8B · Q4_K_M</div>
+          </div>
+          <a class="card__link" href="gemma4-latest.html">View full page ↗</a>
+        </div>
+        <div class="frame-window"><iframe src="gemma4-latest.html" loading="lazy" title="gemma4:latest preview"></iframe></div>
+        <div class="card__stats">
+          <div class="stat"><span class="k">Time</span><span class="v">1m 28s</span></div>
+          <div class="stat"><span class="k">Speed</span><span class="v">73.6 t/s</span></div>
+          <div class="stat"><span class="k">Breakpoints</span><span class="v">3</span></div>
+          <div class="stat"><span class="k">aria-*</span><span class="v">37</span></div>
+        </div>
+        <div class="card__swatches">
+          <span class="swatch" style="background:#1a1a2e"></span>
+          <span class="swatch" style="background:#007aff"></span>
+          <span class="swatch" style="background:#34c759"></span>
+          <span class="swatch" style="background:#2c2c44"></span>
+        </div>
+        <p class="card__note">The strongest middle ground: fast, and
+        second only to qwen3.8-27b-q3 on aria-* coverage — but no
+        prefers-reduced-motion handling.</p>
+      </article>
+
+      <article class="card">
+        <div class="card__head">
+          <div>
+            <div class="card__name"><span class="dot" style="background:var(--tag-4)"></span>gemma4:12b</div>
+            <div class="card__quant">11.9B · Q4_K_M · multimodal</div>
+          </div>
+          <a class="card__link" href="gemma4-12b.html">View full page ↗</a>
+        </div>
+        <div class="frame-window"><iframe src="gemma4-12b.html" loading="lazy" title="gemma4:12b preview"></iframe></div>
+        <div class="card__stats">
+          <div class="stat"><span class="k">Time</span><span class="v">1m 27s</span></div>
+          <div class="stat"><span class="k">Speed</span><span class="v">51.6 t/s</span></div>
+          <div class="stat"><span class="k">Breakpoints</span><span class="v">3</span></div>
+          <div class="stat"><span class="k">aria-*</span><span class="v">10</span></div>
+        </div>
+        <div class="card__swatches">
+          <span class="swatch" style="background:#0f172a"></span>
+          <span class="swatch" style="background:#4f46e5"></span>
+          <span class="swatch" style="background:#334155"></span>
+          <span class="swatch" style="background:#1e293b"></span>
+        </div>
+        <p class="card__note">Larger and vision-capable, but neither faster
+        nor more thorough than its smaller sibling here — the thinnest
+        aria-* coverage of the four despite the extra parameters.</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    Same prompt, same GPU, run independently via direct <code>ollama run</code>
+    calls — no MCP tooling, no worker timeout. Full transcripts and raw
+    output in <a href="https://github.com/auxmedrano/driftnote-bakeoff">the repo</a>.
+    See also <a href="https://github.com/auxmedrano/ollama-worker-mcp">ollama-worker</a>,
+    the MCP server these models were originally tuned against.
+  </div>
+</footer>
+
+</body>
+</html>

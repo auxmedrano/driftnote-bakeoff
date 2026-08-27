@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Driftnote – Local-First Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  /* Light theme */
+  --bg: #ffffff;
+  --fg: #111111;
+  --primary: #3b82f6;
+  --secondary: #f3f4f6;
+  --accent: #f59e0b;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --card-bg: #fafafa;
+  --nav-bg: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111111;
+    --fg: #f5f5f5;
+    --primary: #60a5fa;
+    --secondary: #1f2937;
+    --accent: #fbbf24;
+    --muted: #9ca3af;
+    --border: #374151;
+    --card-bg: #1f2937;
+    --nav-bg: #111111;
+  }
+}
+body {
+  margin:0;
+  font-family:system-ui, sans-serif;
+  line-height:1.6;
+  color:var(--fg);
+  background:var(--bg);
+}
+header {
+  position:sticky;
+  top:0;
+  background:var(--nav-bg);
+  z-index:10;
+  box-shadow:0 2px 4px rgba(0,0,0,.1);
+}
+.nav-container {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0.75rem 1.5rem;
+}
+.logo {
+  font-weight:700;
+  font-size:1.25rem;
+  color:var(--primary);
+}
+nav {
+  display:flex;
+  gap:1rem;
+}
+nav a {
+  color:var(--fg);
+  text-decoration:none;
+  font-weight:500;
+}
+nav a:hover, nav a:focus {
+  color:var(--primary);
+}
+.hamburger {
+  display:none;
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-size:1.5rem;
+}
+@media(max-width:768px) {
+  nav {
+    position:fixed;
+    top:0;
+    left:-100%;
+    width:70%;
+    height:100vh;
+    background:var(--nav-bg);
+    flex-direction:column;
+    align-items:flex-start;
+    padding:2rem;
+    gap:1.5rem;
+    transition:left .3s ease;
+  }
+  nav.open {
+    left:0;
+  }
+  .hamburger {
+    display:block;
+  }
+}
+main {
+  padding:2rem 1.5rem;
+}
+section {
+  margin-bottom:4rem;
+}
+.hero {
+  text-align:center;
+  max-width:800px;
+  margin:auto;
+}
+.hero h1 {
+  font-size:2.5rem;
+  margin-bottom:.5rem;
+}
+.hero p {
+  font-size:1.25rem;
+  margin-bottom:1.5rem;
+  color:var(--muted);
+}
+.cta {
+  display:inline-block;
+  padding:.75rem 1.5rem;
+  background:var(--primary);
+  color:#fff;
+  border-radius:.375rem;
+  text-decoration:none;
+  font-weight:600;
+}
+.features {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1.5rem;
+}
+.feature-card {
+  background:var(--card-bg);
+  border-radius:.5rem;
+  padding:1.5rem;
+  border:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+.feature-card h3 {
+  margin-top:0;
+  color:var(--primary);
+}
+.pricing {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;
+}
+.plan {
+  background:var(--card-bg);
+  border-radius:.5rem;
+  padding:1.5rem;
+  border:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+.plan.recommended {
+  border-color:var(--accent);
+  box-shadow:0 4px 12px rgba(255,166,0,.3);
+}
+.plan .price {
+  font-size:2.5rem;
+  margin:1rem 0;
+}
+.plan ul {
+  list-style:none;
+  padding:0;
+  margin:1rem 0;
+}
+.plan ul li {
+  margin-bottom:.5rem;
+}
+.faq {
+  max-width:800px;
+  margin:auto;
+}
+.faq-item {
+  border-bottom:1px solid var(--border);
+}
+.faq-question {
+  background:var(--secondary);
+  color:var(--fg);
+  padding:.75rem 1rem;
+  cursor:pointer;
+  width:100%;
+  text-align:left;
+  border:none;
+  font-weight:500;
+}
+.faq-question:focus-visible {
+  outline:2px solid var(--primary);
+}
+.faq-answer {
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .3s ease;
+  background:var(--card-bg);
+  padding:0 1rem;
+}
+.faq-answer p {
+  margin:1rem 0;
+}
+.faq-item.open .faq-answer {
+  max-height:500px;
+  padding:1rem;
+}
+.toggle-dark-mode {
+  margin-left:auto;
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-size:1.25rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {transition:none!important;}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav-container">
+    <div class="logo">Driftnote</div>
+    <button class="hamburger" aria-label="Open menu" aria-controls="main-nav" aria-expanded="false">☰</button>
+    <nav id="main-nav" aria-label="Primary">
+      <a href="#hero">Home</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <button class="toggle-dark-mode" aria-label="Toggle dark mode">🌙</button>
+  </div>
+</header>
+<main>
+  <section id="hero" class="hero">
+    <h1>Capture Ideas Anywhere</h1>
+    <p>Local-first note‑taking with instant sync and offline support.</p>
+    <a href="#" class="cta">Get Started</a>
+  </section>
+  <section id="features">
+    <h2>Why Driftnote?</h2>
+    <div class="features">
+      <article class="feature-card">
+        <h3>Fast Offline</h3>
+        <p>Write and edit notes even without an internet connection.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Secure Storage</h3>
+        <p>All notes stay local and encrypted on your device.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Simple Sync</h3>
+        <p>Optional cloud sync via end‑to‑end encryption.</p>
+      </article>
+    </div>
+  </section>
+  <section id="pricing">
+    <h2>Choose a plan</h2>
+    <div class="pricing">
+      <article class="plan">
+        <h3>Free</h3>
+        <p class="price">$0<span>/month</span></p>
+        <ul>
+          <li>Unlimited notes</li>
+          <li>Local storage only</li>
+          <li>No sync</li>
+        </ul>
+        <button>Sign up</button>
+      </article>
+      <article class="plan recommended">
+        <h3>Pro</h3>
+        <p class="price">$5<span>/month</span></p>
+        <ul>
+          <li>All Free features</li>
+          <li>Cloud sync</li>
+          <li>Priority support</li>
+        </ul>
+        <button>Upgrade</button>
+      </article>
+    </div>
+  </section>
+  <section id="faq" class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false" aria-controls="q1">What browsers are supported?</button>
+      <div class="faq-answer" id="q1" role="region" aria-labelledby="q1">
+        <p>All modern browsers (Chrome, Edge, Safari, Firefox) are fully supported.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false" aria-controls="q2">Is my data encrypted?</button>
+      <div class="faq-answer" id="q2" role="region" aria-labelledby="q2">
+        <p>Yes, data is encrypted locally before any sync operation.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false" aria-controls="q3">Can I use it offline?</button>
+      <div class="faq-answer" id="q3" role="region" aria-labelledby="q3">
+        <p>Absolutely. All features work offline until you connect.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+const hamburger = document.querySelector('.hamburger');
+const nav = document.getElementById('main-nav');
+hamburger.addEventListener('click', () => {
+  const open = nav.classList.toggle('open');
+  hamburger.setAttribute('aria-expanded', open);
+});
+const toggleDark = document.querySelector('.toggle-dark-mode');
+let darkMode = null; // null = follow system
+function applyTheme() {
+  if (darkMode === null) {
+    document.documentElement.setAttribute('data-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  }
+}
+toggleDark.addEventListener('click', () => {
+  darkMode = !darkMode;
+  applyTheme();
+});
+applyTheme();
+const media = window.matchMedia('(prefers-color-scheme: dark)');
+media.addEventListener('change', applyTheme);
+const faqItems = document.querySelectorAll('.faq-item');
+faqItems.forEach(item => {
+  const button = item.querySelector('.faq-question');
+  button.addEventListener('click', () => {
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    faqItems.forEach(i => i.classList.remove('open'));
+    if (!expanded) {
+      item.classList.add('open');
+      button.setAttribute('aria-expanded', 'true');
+    } else {
+      button.setAttribute('aria-expanded', 'false');
+    }
+  });
+});
+</script>
+</body>
+</html>
