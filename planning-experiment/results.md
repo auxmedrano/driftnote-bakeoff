@@ -100,6 +100,46 @@ cheaper way to close the gap than cranking up internal reasoning effort,
 at least for the one model (gpt-oss:20b) where both conditions started
 from the same real deficit.
 
+## A human spot-check, and why qwen's C looks different from A and B
+
+The checklist maxes out at 23/23 for all three `qwen3.8-27b-q3` conditions,
+so it has nothing left to say about which one is actually *better* — that
+needs an eye, not a regex. On visual review, B was ranked the best of the
+three, with C second and A last.
+
+That ranking is at least directionally consistent with the one thing the
+checklist *can* still measure once everyone's at the ceiling: breakpoint
+depth track the same order (B 12 → C 10 → A 8, see Findings above). But it
+comes at B's real cost — 20m37s versus C's 8m9s and A's 6m41s — which the
+"explicit planning is the cheap win" conclusion above (drawn from gpt-oss)
+does not straightforwardly extend to. For qwen specifically, the expensive
+lever seems to have bought something real.
+
+Separately, a visual question came up: why do A and B *look* so similar
+(same warm-cream-and-terracotta family) while C looks different (cooler,
+green-accented)? The actual token values settle it:
+
+| Condition | Background | Accent |
+|---|---|---|
+| A | `#f6f1e6` | `#cf4a2b` |
+| B | `#f3efe4` (near-identical to A) | `#c93d12` (same red-orange family as A) |
+| C | `#F7F5F0` (cooler, less saturated) | `#2F6B5E` (teal-green — a different hue family entirely) |
+
+A and B are both **one-shot completions of the literal same prompt text**
+— same model, same instruction, no intermediate step — so the model's
+"instinct" for this exact brief converges on nearly the same palette both
+times (this is also the same warm-cream/terracotta default flagged as a
+common AI-aesthetic cliché in the main bake-off). C's palette differs
+because C *is not the same prompt*: it's the output of a separate
+plan-writing call, worded differently (explicitly asking the model to name
+and justify each color token's role, one sentence at a time), whose output
+is then fed back as context for a second build call. That's a genuinely
+different prompt conditioning a fresh sampling draw — not evidence that
+"explicit planning" as a general mechanism produces different color
+choices, just that *this specific* differently-worded planning prompt did.
+`think=high` (Condition B), by contrast, reasons about the *same* original
+prompt, so it isn't surprising its color choice landed close to baseline's.
+
 ## Files
 
 - `plan-prompt.txt` — the planning-step prompt (Condition C, step 1)
