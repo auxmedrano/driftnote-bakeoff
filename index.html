@@ -164,6 +164,19 @@ tr.hl td{background:var(--surface-2)}
 .row-link{font-family:var(--mono); font-size:.8rem; color:var(--accent); text-decoration:none; white-space:nowrap}
 .row-link:hover{text-decoration:underline}
 
+.palette-compare{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:1px; background:var(--line);
+  border:1px solid var(--line); margin:20px 0;
+}
+.palette-compare__item{background:var(--surface); padding:14px 16px}
+.palette-compare__item .label{display:flex; align-items:center; gap:8px; font-size:.82rem; color:var(--ink-soft); margin-bottom:10px}
+.palette-compare__swatches{display:flex; gap:6px; margin-bottom:8px}
+.palette-compare__swatches .swatch{width:26px; height:26px; border:1px solid rgba(0,0,0,.08); flex:none}
+.palette-compare__item code{font-size:.72rem; color:var(--ink-faint); display:block}
+@media (max-width:640px){ .palette-compare{grid-template-columns:1fr} }
+.planning__prose{color:var(--ink-soft); max-width:70ch; margin:12px 0}
+.planning__prose em{color:var(--ink)}
+
 /* ---------- Footer ---------- */
 .foot{border-top:1px solid var(--line); padding:28px 0; color:var(--ink-faint); font-size:.85rem}
 .foot a{color:var(--ink-soft); text-decoration:underline; text-underline-offset:2px}
@@ -511,6 +524,59 @@ tr.hl td{background:var(--surface-2)}
     fixes after manual verification caught real false negatives in the
     scoring script itself — worth knowing before trusting these numbers at
     face value.</p>
+
+    <h3 style="font-size:1rem; margin-top:32px">A human look at qwen3.8-27b-q3's three variants</h3>
+    <p class="planning__prose">The
+    checklist maxes out at 23/23 for all three qwen conditions, so it has
+    nothing left to say about which is actually <em>better</em> — that needs
+    an eye, not a regex. On visual review: <strong>B ranked best, C second,
+    A last</strong> — consistent with the one signal the checklist can still
+    see once everyone's at the ceiling (breakpoint depth: B 12 → C 10 → A 8),
+    though B's 20m37s cost is real and doesn't make the "explicit planning is
+    the cheap win" conclusion above hold for qwen the way it did for gpt-oss.</p>
+
+    <p class="planning__prose">A separate
+    visual question: why do A and B look so similar (warm cream + terracotta)
+    while C looks different (cooler, green-accented)? The palettes themselves
+    answer it —</p>
+
+    <div class="palette-compare">
+      <div class="palette-compare__item">
+        <div class="label"><span class="cond-badge" data-cond="A">A</span> baseline</div>
+        <div class="palette-compare__swatches">
+          <span class="swatch" style="background:#f6f1e6"></span>
+          <span class="swatch" style="background:#cf4a2b"></span>
+        </div>
+        <code>#f6f1e6 / #cf4a2b</code>
+      </div>
+      <div class="palette-compare__item">
+        <div class="label"><span class="cond-badge" data-cond="B">B</span> internal reasoning</div>
+        <div class="palette-compare__swatches">
+          <span class="swatch" style="background:#f3efe4"></span>
+          <span class="swatch" style="background:#c93d12"></span>
+        </div>
+        <code>#f3efe4 / #c93d12 — near-identical to A</code>
+      </div>
+      <div class="palette-compare__item">
+        <div class="label"><span class="cond-badge" data-cond="C">C</span> explicit plan</div>
+        <div class="palette-compare__swatches">
+          <span class="swatch" style="background:#F7F5F0"></span>
+          <span class="swatch" style="background:#2F6B5E"></span>
+        </div>
+        <code>#F7F5F0 / #2F6B5E — different hue family</code>
+      </div>
+    </div>
+
+    <p class="planning__prose">A and B are
+    <strong>one-shot completions of the literal same prompt text</strong> —
+    same model, same instruction, no intermediate step — so the model's
+    color instinct converges on nearly the same answer both times (also the
+    same cream/terracotta default flagged as an AI-aesthetic cliché in the
+    main bake-off above). C's palette differs because C isn't the same
+    prompt: it's the output of a separate plan-writing call, worded
+    differently, whose result is fed back as context for the build call —
+    a genuinely different prompt producing a fresh sampling draw, not
+    evidence that "planning" itself changes color choices.</p>
 
     <p class="planning__more"><a href="planning-experiment/results.md">Full methodology, every prompt, every raw transcript, and the scoring-bug postmortem →</a></p>
   </div>
